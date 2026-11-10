@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Superkausi">
 <title>LIIGA: SUPERKAUSI – TV</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -83,11 +87,19 @@ kbd{
   border:1px solid var(--muted); background:transparent; color:var(--fg); border-radius:999px; padding:3px 12px;
 }
 #touch{ position:absolute; inset:0; pointer-events:none; }
+/* phones and tablets: no key help under the game, the game uses the whole screen height; mute and pause sit in the corner */
+html.touch body{ gap:0; background:#000; }
+html.touch #bar{ display:none; }
+html.touch #wrap{ width:min(100vw, calc(100dvh * 16 / 9)); border-radius:0; box-shadow:none; }
+#tTop{ position:absolute; top:1.2cqw; right:1.4cqw; display:flex; gap:1cqw; pointer-events:auto; }
+#tTop button{ width:5.4cqw; height:5.4cqw; border-radius:50%; border:0; background:rgba(11,20,36,.72); color:#fff; font-family:"Bungee",sans-serif; font-size:1.6cqw; touch-action:none; }
+#tTop button.off{ color:#ff6b6a; }
 #stick{ position:absolute; left:2cqw; bottom:3cqw; width:16cqw; height:16cqw; border-radius:50%; background:rgba(255,255,255,.12); border:.3cqw solid rgba(255,255,255,.35); pointer-events:auto; touch-action:none; }
 #knob{ position:absolute; left:50%; top:50%; width:6cqw; height:6cqw; margin:-3cqw 0 0 -3cqw; border-radius:50%; background:rgba(255,255,255,.7); }
 #tbtns{ position:absolute; right:2cqw; bottom:3cqw; display:flex; gap:1.4cqw; pointer-events:auto; }
-#tbtns button{ width:9cqw; height:9cqw; border-radius:50%; border:0; font-family:"Bungee",sans-serif; font-size:1.5cqw; color:#0b1424; background:rgba(255,255,255,.8); touch-action:none; }
+#tbtns button{ width:8.4cqw; height:8.4cqw; border-radius:50%; border:0; font-family:"Bungee",sans-serif; font-size:1.5cqw; color:#0b1424; background:rgba(255,255,255,.8); touch-action:none; }
 #tbtns button.k{ background:var(--gold); }
+#tbtns button.d{ font-size:1.15cqw; background:#ffe7a3; }
 .note{ font-size:1.7cqw; color:#c9d6e4; margin:0 0 1.2cqw; }
 .result.small{ font-size:4.4cqw; }
 .final.small{ font-size:2.4cqw; margin:.4cqw 0 1.2cqw; }
@@ -185,8 +197,10 @@ kbd{
   <canvas id="game" width="1280" height="720" aria-label="Jääkiekko-ottelu"></canvas>
 
   <div id="touch" class="hidden">
+    <div id="tTop"><button id="tMute" aria-label="Äänet">ÄÄNI</button><button id="tPause" aria-label="Tauko">II</button></div>
     <div id="stick"><div id="knob"></div></div>
     <div id="tbtns">
+      <button id="tDeke" class="d">HARHAUTA</button>
       <button id="tCheck">TAKLAA</button>
       <button id="tPass">SYÖTÄ</button>
       <button id="tShoot" class="k">LAUO</button>
@@ -3910,7 +3924,7 @@ const OVERLAYS = ['menu', 'season', 'pause', 'over', 'evset', 'tpick', 'ach'];
 function only(id) { for (const o of OVERLAYS) show(o, o === id); }
 let menuMode = 'single';
 const KEY_HTML = {
-  single: '<span><kbd>WASD</kbd><kbd>↑↓←→</kbd> liiku</span><span><kbd>Välilyönti</kbd> taklaa</span><span><kbd>J</kbd> syötä / vaihda pelaajaa</span><span><kbd>K</kbd> laukaise, pidä pohjassa = kovempi</span><span><kbd>L</kbd> harhauta (puhelimessa nopea pyyhkäisy)</span><span><kbd>P</kbd> tauko</span><span><kbd>M</kbd> äänet</span>',
+  single: '<span><kbd>WASD</kbd><kbd>↑↓←→</kbd> liiku</span><span><kbd>Välilyönti</kbd> taklaa</span><span><kbd>J</kbd> syötä / vaihda pelaajaa</span><span><kbd>K</kbd> laukaise, pidä pohjassa = kovempi</span><span><kbd>L</kbd> harhauta (puhelimessa HARHAUTA-nappi)</span><span><kbd>P</kbd> tauko</span><span><kbd>M</kbd> äänet</span>',
   duo: '<span><b>Pelaaja 1</b> <kbd>WASD</kbd> liiku <kbd>F</kbd> taklaa <kbd>G</kbd> syötä <kbd>H</kbd> lauo <kbd>T</kbd> harhauta</span><span><b>Pelaaja 2</b> <kbd>↑↓←→</kbd> liiku <kbd>,</kbd> taklaa <kbd>.</kbd> syötä <kbd>-</kbd> lauo <kbd>L</kbd> harhauta (myös numerot <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd>)</span><span>Pidä laukaisua pohjassa = kovempi laukaus</span><span><kbd>P</kbd> tauko</span>',
 };
 const BAR_HTML = {
@@ -3970,7 +3984,7 @@ function refreshMenu() {
   $('optEvents').textContent = 'Tapahtumat: ' + ['vähän', 'normaali', 'paljon'][G.settings.chaos ?? 1] + (nOn < EVENT_KEYS.length ? ' (' + nOn + '/' + EVENT_KEYS.length + ')' : '');
 }
 function startGame(mode) {
-  ac(); startMatch(false, mode); only(null);
+  ac(); goFull(); startMatch(false, mode); only(null);
   $('barKeys').innerHTML = BAR_HTML[mode === 'duo' ? 'duo' : 'single'];
   show('touch', isTouch && mode !== 'duo');
   G.view = { x: CW / 2, y: CH / 2, z: 1 };
@@ -3978,7 +3992,7 @@ function startGame(mode) {
 }
 function toMenu() { if (!G.demo) startMatch(true); show('touch', false); only('menu'); refreshMenu(); }
 function togglePause() { if (!playing()) return; G.paused = !G.paused; show('pause', G.paused); if (G.paused) $('pause').querySelector('.lede').textContent = say('pause'); $('pauseBtn').textContent = G.paused ? 'Jatka' : 'Tauko'; }
-function toggleMute() { muted = !muted; $('muteBtn').textContent = muted ? 'Äänet pois' : 'Äänet päällä'; }
+function toggleMute() { muted = !muted; $('muteBtn').textContent = muted ? 'Äänet pois' : 'Äänet päällä'; $('tMute').classList.toggle('off', muted); }
 function showShowGrid() {
   const g = document.getElementById('showGrid'); if (!g) return; g.innerHTML = '';
   for (const k of SHOW_KEYS) {
@@ -4126,6 +4140,11 @@ $('quit').addEventListener('click', () => { G.paused = false; $('pauseBtn').text
 $('resume').addEventListener('click', togglePause);
 $('pauseBtn').addEventListener('click', togglePause);
 $('muteBtn').addEventListener('click', toggleMute);
+$('tMute').addEventListener('click', () => toggleMute()); $('tPause').addEventListener('click', () => togglePause());
+function goFull() { // phones: full screen and landscape when a game starts (Android; on iPhone add the page to the home screen)
+  if (!isTouch || document.fullscreenElement) return; const el = document.documentElement, rq = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!rq) return; try { const pr = rq.call(el, { navigationUI: 'hide' }); if (pr && pr.then) pr.then(() => { try { screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} }).catch(() => {}); } catch (e) {}
+}
 $('seasonPlay').addEventListener('click', () => startGame('season'));
 $('seasonNew').addEventListener('click', () => { newSeason(); seasonTab = 'table'; showSeason(); });
 document.querySelectorAll('#seasonTabs button').forEach(b => b.addEventListener('click', () => { seasonTab = b.dataset.t; showSeason(); }));
@@ -4153,18 +4172,17 @@ document.querySelectorAll('#diffSeg button').forEach(btn => btn.addEventListener
 
 // touch controls (single player)
 const isTouch = typeof window !== 'undefined' && (('ontouchstart' in window) || (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches));
+document.documentElement.classList.toggle('touch', isTouch);
 (function () {
   const stick = $('stick'), knob = $('knob'); let id = null, ox = 0, oy = 0;
   const R = () => stick.getBoundingClientRect().width * 0.4;
   stick.addEventListener('pointerdown', e => { id = e.pointerId; const r = stick.getBoundingClientRect(); ox = r.left + r.width / 2; oy = r.top + r.height / 2; stick.setPointerCapture(id); move(e); });
-  const move = e => { if (e.pointerId !== id) return; let dx = e.clientX - ox, dy = e.clientY - oy; const l = hyp(dx, dy), m = R(); if (l > m) { dx *= m / l; dy *= m / l; } knob.style.transform = `translate(${dx}px,${dy}px)`; G.touch.x = dx / m; G.touch.y = -dy / m; swipe(dx / m, dy / m); };
-  let hist = [], swCD = 0;
-  const swipe = (x, y) => { const now = performance.now(); hist.push([now, x, y]); while (hist.length && now - hist[0][0] > 170) hist.shift(); const h0 = hist[0]; if (h0 && now > swCD && hyp(x - h0[1], y - h0[2]) > 0.75) { G.press[0].deke = true; swCD = now + 450; hist = []; } };
+  const move = e => { if (e.pointerId !== id) return; let dx = e.clientX - ox, dy = e.clientY - oy; const l = hyp(dx, dy), m = R(); if (l > m) { dx *= m / l; dy *= m / l; } knob.style.transform = `translate(${dx}px,${dy}px)`; G.touch.x = dx / m; G.touch.y = -dy / m; };
   stick.addEventListener('pointermove', move);
   const up = e => { if (e.pointerId !== id) return; id = null; knob.style.transform = ''; G.touch.x = 0; G.touch.y = 0; };
   stick.addEventListener('pointerup', up); stick.addEventListener('pointercancel', up);
   const bind = (el, key) => el.addEventListener('pointerdown', e => { e.preventDefault(); G.press[0][key] = true; if (key === 'shoot') G.touchShoot = true; });
-  bind($('tCheck'), 'check'); bind($('tPass'), 'pass'); bind($('tShoot'), 'shoot');
+  bind($('tCheck'), 'check'); bind($('tPass'), 'pass'); bind($('tDeke'), 'deke'); bind($('tShoot'), 'shoot'); // dekes only from their own button (stick swipes triggered them by accident)
   const rel = () => { G.touchShoot = false; };
   $('tShoot').addEventListener('pointerup', rel); $('tShoot').addEventListener('pointercancel', rel); $('tShoot').addEventListener('pointerleave', rel);
 })();
