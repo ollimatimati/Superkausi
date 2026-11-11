@@ -232,7 +232,6 @@ html.touch #wrap{ width:min(100vw, calc(100dvh * 16 / 9)); border-radius:0; box-
       <button id="optFollow"></button>
       <button id="optReplay"></button>
       <button id="optEvents">Tapahtumat</button>
-      <button id="optQuality"></button>
       <button id="optMusic"></button>
       <button id="optAch">Saavutukset</button>
     </div>
@@ -2188,7 +2187,9 @@ function update(dt) {
 // A small WebGL2 engine written for this game: instanced lit primitives (spheres, cylinders, boxes, cones),
 // shadow mapping, a mirrored reflection pass under the glossy ice, textured quads and additive glows.
 // The 2D canvas on top of it carries the TV graphics.
-const Q = () => (G.settings.quality ?? 2);
+// fixed graphics level (no menu button): medium on computers, low on phones and tablets so the game runs smoothly
+const QLEVEL = (typeof window !== 'undefined' && (('ontouchstart' in window) || (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches))) ? 0 : 1;
+const Q = () => QLEVEL;
 const ZH = [2.4, 1.35];
 const glc = document.getElementById('gl');
 let gl = null;
@@ -3358,7 +3359,7 @@ function buildMascot(m) {
   else sph(W(-0.45, 0, 0.75), 0.12, main, 0.2);
 }
 function buildShow(dt) {
-  const S = G.show; if (!S) return;
+  const S = G.show; if (!S || S.intro > 0) return; // nothing on the ice until the intro card is over
   if (S.m) buildSkater(S.m, dt);
   if (S.mo) buildMoose(S.mo, dt);
   if (S.z) buildZamboni(S.z);
@@ -3367,7 +3368,7 @@ function buildShow(dt) {
     const bz = 1.0, tip = [0, 6.6, 1.75]; cyl([0, 5.4, bz], tip, 0.24, '#3a3f4a', 0.6); cyl(tip, [0, 6.75, 1.82], 0.28, '#ffc629', 0.5);
     for (const s of [-1, 1]) cyl([s * 0.38, 5.6, 0.45], [s * 0.28, 5.6, 0.45], 0.45, '#5a3a20', 0.3);
     boxA(0, 5.6, 0.55, 0.9, 1.0, 0.5, '#2a2f3a', 0.3);
-    for (const s of S.saus) { const ca = Math.cos(s.a) * 0.45, sa = Math.sin(s.a) * 0.45; cap([s.x - ca, s.y, s.z - sa], [s.x + ca, s.y, s.z + sa], 0.17, '#c0502c', 0.5); quadBill(QD.glow, s.x, s.y, s.z, 1.4, CS('#ffd65a'), 0.35); }
+    for (const s of S.saus || []) { const ca = Math.cos(s.a) * 0.45, sa = Math.sin(s.a) * 0.45; cap([s.x - ca, s.y, s.z - sa], [s.x + ca, s.y, s.z + sa], 0.17, '#c0502c', 0.5); quadBill(QD.glow, s.x, s.y, s.z, 1.4, CS('#ffd65a'), 0.35); }
   }
   for (const h of S.hearts) quadBill(QD.glow, h.x, h.y, h.z, 0.55, CS('#ff4f8f'), Math.min(1, h.life));
 }
@@ -3978,7 +3979,6 @@ function refreshMenu() {
   $('optReplay').textContent = 'Maaliuusinta: ' + (G.settings.replay ? 'päällä' : 'pois');
   $('optFollow').classList.toggle('on', G.settings.follow); $('optFollow').setAttribute('aria-pressed', String(G.settings.follow));
   $('optReplay').classList.toggle('on', G.settings.replay); $('optReplay').setAttribute('aria-pressed', String(G.settings.replay));
-  $('optQuality').textContent = 'Grafiikka: ' + ['matala', 'keskitaso', 'korkea'][Q()];
   $('optMusic').textContent = 'Musiikki: ' + (G.settings.music ? 'päällä' : 'pois'); $('optMusic').classList.toggle('on', !!G.settings.music);
   const nOn = enabledEvents().length;
   $('optEvents').textContent = 'Tapahtumat: ' + ['vähän', 'normaali', 'paljon'][G.settings.chaos ?? 1] + (nOn < EVENT_KEYS.length ? ' (' + nOn + '/' + EVENT_KEYS.length + ')' : '');
@@ -4161,7 +4161,6 @@ $('tpBack').addEventListener('click', () => { only('menu'); refreshMenu(); });
 $('tpOk').addEventListener('click', () => { if (pickCur) { G.settings[pickKey] = pickCur; saveSettings(); } only('menu'); refreshMenu(); });
 $('optMusic').addEventListener('click', () => { G.settings.music = !G.settings.music; saveSettings(); ac(); refreshMenu(); });
 for (const ev of ['pointerdown', 'keydown']) window.addEventListener(ev, () => { if (!AC) ac(); }, { passive: true });
-$('optQuality').addEventListener('click', () => { G.settings.quality = (Q() + 2) % 3; saveSettings(); setRes(); refreshMenu(); });
 function setRes() { RES = [1, 1.25, 1.5][Q()]; cv.width = Math.round(CW * RES); cv.height = Math.round(CH * RES); glc.width = cv.width; glc.height = cv.height; buildStatic(); }
 $('evDone').addEventListener('click', () => { only('menu'); refreshMenu(); });
 document.querySelectorAll('#chaosSeg button').forEach(b => b.addEventListener('click', () => { G.settings.chaos = +b.dataset.c; saveSettings(); showEvSet(); }));
