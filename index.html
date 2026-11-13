@@ -112,7 +112,11 @@ html.touch #wrap{ width:min(100vw, calc(100dvh * 16 / 9)); border-radius:0; box-
 .tbl tr.next td{ color:#ffc629; }
 .tbl tr.sum td{ font-weight:800; border-bottom:0; }
 .settings{ margin:0 0 1.8cqw; }
-.settings button{ font-size:1.55cqw; }
+.setlist{ flex-direction:column; align-items:stretch; min-width:36cqw; gap:.8cqw; margin:1.2cqw 0 2.2cqw; }
+.setlist button{ font-size:1.9cqw; padding:.8cqw 2.4cqw; }
+.pfull .setlist{ min-width:76vw; gap:2.4vw; } .pfull .setlist button{ font-size:4.4vw; padding:2.4vw 4vw; }
+.settings{ flex-wrap:wrap; justify-content:center; row-gap:.8cqw; max-width:98cqw; gap:.5cqw; }
+.settings button{ font-size:1.42cqw; white-space:nowrap; padding-left:1.3cqw; padding-right:1.3cqw; }
 #modeSeg{ margin-top:1.2cqw; }
 .logo{ width:9cqw; height:auto; margin-bottom:-.6cqw; filter:drop-shadow(0 .4cqw .6cqw rgba(0,0,0,.5)); }
 .overlay:not(.hidden){ animation:ovIn .35s ease both; }
@@ -152,6 +156,21 @@ html.touch #wrap{ width:min(100vw, calc(100dvh * 16 / 9)); border-radius:0; box-
 #seasonBody .tbl .jer{ width:1.5cqw; height:1.5cqw; vertical-align:middle; margin-right:.3cqw; }
 .tbl tr.cut td{ border-bottom:.2cqw solid #ffc629; }
 .gh{ display:inline-block; width:1cqw; height:1cqw; border-radius:50%; background:radial-gradient(circle at 35% 35%, #fff3b0, #e3b21c 55%, #8a6400); margin-left:.4cqw; vertical-align:middle; }
+.recgrid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:.7cqw; margin:.4cqw 0 1.4cqw; width:100%; max-width:92cqw; }
+.rec{ text-align:left; padding:.6cqw 1.1cqw; border-radius:1cqw; border:.15cqw solid #33465f; opacity:.55; }
+.rec.got{ opacity:1; border-color:#ffc629; background:rgba(255,198,41,.08); }
+.rec small{ display:block; font-size:1.2cqw; font-weight:800; color:#8fa2b8; letter-spacing:.04em; text-transform:uppercase; }
+.rec b{ display:block; font-family:"Bungee",Impact,sans-serif; font-weight:400; font-size:2.6cqw; color:#fff; line-height:1.15; }
+.rec em{ display:block; font-style:normal; font-size:1.15cqw; color:#a9b8ca; min-height:1.4em; }
+.rechist{ margin:0 0 1.4cqw; } .rechist h4{ margin:0 0 .4cqw; font-size:1.6cqw; color:#ffc629; }
+.rechist .tbl{ font-size:1.45cqw; }
+#recBtn{ position:absolute; right:1.7cqw; top:4.3cqw; z-index:60; font-family:"Barlow Condensed",sans-serif; font-weight:800; font-size:max(1.35cqw, 13px); color:#fff; background:#0b1424; border:.2cqw solid #ff3b2f; border-radius:.8cqw; padding:.45cqw 1.2cqw; cursor:pointer; }
+#recBtn:disabled{ opacity:.85; cursor:default; border-color:#ff3b2f; color:#ff8a82; }
+#clipBox{ position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); z-index:85; background:#0b1424; border:.25cqw solid #ffc629; border-radius:1.2cqw; padding:1.6cqw 2.4cqw; text-align:center; color:#fff; box-shadow:0 .6cqw 2cqw rgba(0,0,0,.6); }
+#clipBox b{ display:block; font-family:"Bungee",Impact,sans-serif; font-weight:400; font-size:2.2cqw; margin:0 0 1.2cqw; }
+#clipBox .row{ justify-content:center; } #clipBox .btn{ font-size:1.7cqw; }
+.pfull .recgrid{ grid-template-columns:repeat(2, 1fr); gap:1.6vw; max-width:none; } .pfull .rec{ padding:1.4vw 2vw; border-radius:2vw; } .pfull .rec small{ font-size:2.8vw; } .pfull .rec b{ font-size:6vw; } .pfull .rec em{ font-size:2.8vw; }
+.pfull .rechist h4{ font-size:3.6vw; } .pfull .rechist .tbl{ font-size:3vw; } .pfull #recSum{ font-size:3.6vw; }
 .achgrid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:.7cqw; margin:0 0 2cqw; width:100%; max-width:92cqw; }
 .ach{ display:flex; gap:.8cqw; align-items:center; text-align:left; padding:.6cqw 1cqw; border-radius:1cqw; border:.15cqw solid #33465f; opacity:.45; }
 .ach.got{ opacity:1; border-color:#ffc629; background:rgba(255,198,41,.08); }
@@ -193,6 +212,11 @@ html.touch #wrap{ width:min(100vw, calc(100dvh * 16 / 9)); border-radius:0; box-
 <body>
 <div id="wrap">
   <div id="achToast" role="status" aria-live="polite"></div>
+  <button id="recBtn" class="hidden" type="button">● TALLENNA UUSINTA</button>
+  <div id="clipBox" class="hidden" role="dialog" aria-label="Uusinta tallennettu">
+    <b>Uusinta tallennettu</b>
+    <div class="row"><button id="clipShare" class="btn" type="button">JAA</button><button id="clipSave" class="btn" type="button">LATAA</button><button id="clipClose" class="btn ghost" type="button">SULJE</button></div>
+  </div>
   <canvas id="gl" aria-hidden="true"></canvas>
   <canvas id="game" width="1280" height="720" aria-label="Jääkiekko-ottelu"></canvas>
 
@@ -229,11 +253,9 @@ html.touch #wrap{ width:min(100vw, calc(100dvh * 16 / 9)); border-radius:0; box-
     <p id="modeNote" class="note hidden"></p>
     <div class="teamrow"><button id="teamA" class="tchip"></button><span class="vs">vs</span><button id="teamB" class="tchip"></button></div>
     <div class="seg settings" role="group" aria-label="Asetukset">
-      <button id="optFollow"></button>
-      <button id="optReplay"></button>
-      <button id="optEvents">Tapahtumat</button>
-      <button id="optMusic"></button>
+      <button id="optSet">Asetukset</button>
       <button id="optAch">Saavutukset</button>
+      <button id="optRec">Ennätykset</button>
     </div>
     <button id="play" class="btn big">PELAA</button>
     <div class="keys" id="menuKeys"></div>
@@ -244,6 +266,14 @@ html.touch #wrap{ width:min(100vw, calc(100dvh * 16 / 9)); border-radius:0; box-
     <p id="achCount" class="note"></p>
     <div id="achGrid" class="achgrid"></div>
     <button id="achBack" class="btn">VALMIS</button>
+  </div>
+
+  <div id="recs" class="overlay hidden">
+    <p class="result small">ENNÄTYKSET</p>
+    <p id="recSum" class="note"></p>
+    <div id="recGrid" class="recgrid"></div>
+    <div id="recHist" class="rechist"></div>
+    <button id="recBack" class="btn">VALMIS</button>
   </div>
 
   <div id="season" class="overlay hidden">
@@ -267,6 +297,17 @@ html.touch #wrap{ width:min(100vw, calc(100dvh * 16 / 9)); border-radius:0; box-
       <button data-l="8">Lyhyt kausi: 8 kierrosta</button>
       <button data-l="17">Täysi kausi: 17 kierrosta</button>
     </div>
+  </div>
+
+  <div id="setts" class="overlay hidden">
+    <p class="result small">ASETUKSET</p>
+    <div class="seg setlist" role="group" aria-label="Asetukset">
+      <button id="optFollow"></button>
+      <button id="optReplay"></button>
+      <button id="optEvents">Tapahtumat</button>
+      <button id="optMusic"></button>
+    </div>
+    <button id="setBack" class="btn">VALMIS</button>
   </div>
 
   <div id="evset" class="overlay hidden">
@@ -452,7 +493,7 @@ function musicStep(t, s) { // one 16th note: Am F C G, kick and snare, bass, org
 }
 function musicWanted() {
   if (!G.settings.music || muted) return null;
-  const open = ['menu', 'season', 'tpick', 'evset', 'over'].some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
+  const open = ['menu', 'season', 'tpick', 'evset', 'over', 'setts'].some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
   return open || G.state === 'intermission' || G.state === 'mvp' ? 'menu' : null;
 }
 function musicUpdate() {
@@ -488,6 +529,11 @@ function vox(delay, dur, freq) { // a crowd of voices singing one syllable
   for (const det of [0, 6, -8, 13, -15]) { const o = a.createOscillator(); o.type = 'sawtooth'; o.frequency.value = freq + det; o.connect(f); o.start(t); o.stop(t + dur + 0.05); }
 }
 const SFX = {
+  squawk() { if (!canPlay('squawk', 400)) return; osc('sawtooth', 1500, 820, 0.16, 0.05); osc('sawtooth', 1350, 700, 0.22, 0.045, 0.2); },
+  disco() { // four on the floor with a little bass line
+    if (!canPlay('disco', 1500)) return;
+    [110, 110, 147, 131].forEach((f, i) => { const t = i * 0.47; osc('sine', 150, 45, 0.18, 0.26, t); noise(0.05, 0.07, 'highpass', 7000, t + 0.235); osc('square', f, f, 0.18, 0.035, t + 0.235); });
+  },
   chant() {
     if (!canPlay('chant', 3000)) return;
     [[0, 0.2, 196], [0.24, 0.28, 220], [0.6, 0.17, 196], [0.8, 0.17, 196], [1.0, 0.38, 165]].forEach(([t, d, f]) => vox(t, d, f));
@@ -668,6 +714,9 @@ const TXT = {
     hug: { title: 'HALAUSKAMERA', sub: ['Hirvi ja Karhu: rakkautta ensisilmäyksellä', 'Halaus kestää koko erätauon', 'Kamera ei katso pois'] },
     cannon: { title: 'MAKKARATYKKI!', sub: ['Maskotit ampuvat makkaraa katsomoon', 'Sinappia ei toimiteta', 'Nappaa makkara, voita makkara'] },
     zamboni: { title: 'KUNNIAKIERROS', sub: ['Jäänhoitokone ja Kettu katolla', 'Kettu vilkuttaa, kuski ei', 'Uusi jää, vanha kettu'] },
+    skate: { title: 'HIRVEN TAITOLUISTELU', sub: ['Hirvi esittää vapaaohjelmansa', 'Piruetti, tutu ja sarvet'], judges: 'TUOMARIT' },
+    raffle: { title: 'ILLAN ARVONTA', sub: ['Valokeila etsii voittajan', 'Pidä lippu valmiina'], win: 'RIVI {r}, PAIKKA {p}', prize: 'VOITTI {x}!', prizes: ['MAKKARAN', 'VUODEN PULLAT', 'HIRVEN (PALAUTETTAVA)', 'SILAKKAPURKIN', 'JÄÄNHOITOKONEKYYDIN', 'TUOMARIN SILMÄLASIT', 'MUMMON VILLASUKAT'] },
+    blindref: { title: 'TUOMARI SOKKONA', sub: ['Tuomari tarkastaa kaukalon itse', 'Tänään tuomari näkee kaiken. Melkein.'] },
     dance: { title: 'TANSSIKISA', sub: ['Karhu vastaan Kettu', 'Yleisö päättää voittajan'], win: 'YLEISÖ VALITSI: {x}!' },
   },
   jumboAds: ['MUMMON MAKKARA / Grillattu sinun puolestasi', 'MUMMON PULLA / Taklaa nälän', 'HIRVIVAKUUTUS / Kun hirvi tulee kaukaloon', 'SILAKKA-KIOSKI / Tuoretta suoraan jäältä', 'TUOMARIN SILMÄLASIT / Näet kaiken, ehkä', 'JÄÄNHOITOKONEKOULU / Opi ajamaan kentän poikki', 'SAIPPUA OY / Liukkaampaa kuin koskaan', 'KATSOMOKAHVI / Kaatuu joka maalissa', 'KATOSRUUVIT / Pitävät yleensä'],
@@ -706,6 +755,8 @@ const TXT = {
     ref: { title: 'TUOMARI SEKOAA!', col: '#ffffff', sub: ['Hän haluaa kiekon itselleen', 'Tuomarin kahvissa oli jotain'], say: ['TUOMARI EI OLE TÄSSÄ MUKANA!', 'Tuomari pelaa nyt omaa peliään!'] },
     goalie: { title: 'MAALIVAHTI HYÖKKÄÄ!', col: '#ffc629', sub: ['{joukkue}: maali on tyhjä', 'Joku vartioikaa maalia!'], say: ['{mv} lähti seikkailemaan!', '{mv} haluaa kerrankin tehdä maalin!'] },
     granny: { title: 'YLIVOIMAINEN MUMMO!', col: '#e9a6ff', sub: ['Hän hyökkää kohti maalia: {abbr}', '87 vuotta, nolla armoa'], say: ['Mummo nappasi mailan katsomosta!', 'Mummolla on kyynärpäät ja hän käyttää niitä!'] },
+    gull: { title: 'LOKKI VEI KIEKON!', col: '#e8eef5', sub: ['Kiekko lähti lentoon ilman lupaa', 'Lokki ei ole kummankaan joukkueen puolella'], say: ['Lokki nappasi kiekon! Tätä ei ole säännöissä.', 'Kiekko lentää lokin kyydissä. Tuomari katsoo avuttomana.'], drop: ['Lokki pudotti kiekon. Kiitos lainasta!', 'Lokki kyllästyi kiekkoon ja pudotti sen.'] },
+    disco: { title: 'DISKO!', col: '#ff6bd6', sub: ['Diskopallo laskeutui katosta', 'Kaikki luistelevat rytmissä'], say: ['Diskopallo pyörii ja pelaajat kiitävät!', 'Tämä hetki pelataan diskon tahdissa.'] },
     fish: { title: 'KALA JÄÄLLÄ!', col: '#9ff0c8', sub: ['Yleisö heitti silakan', 'Silakka on paikallista lähiruokaa'], say: ['Kiekko kimpoaa kalasta. Tätä ei harjoiteltu.', 'Kala on tällä hetkellä kentän liukkain pelaaja!'] },
     allcheck: { title: 'KAIKKI TAKLAAVAT!', col: '#ff4d4d', sub: ['Sääntökirja heitettiin katsomoon', 'Tuomari meni kahville'], say: ['Kentällä on täysi kaaos!', 'Kaikki taklaavat kaikkia, myös itseään!'] },
     stick: { title: 'MAILA KATKESI!', col: '#d8b47a', sub: ['#{numero} {nimi} pelaa tikulla', 'Mailatehdas pahoittelee'], say: ['{nimi} huitoo puolikkaalla mailalla.', '{nimi} pelaa nyt hammastikulla!'] },
@@ -1161,9 +1212,25 @@ EVENTS.jumbo = { dur: 9, start(e) {
     e.j = mkActor('jumbo', { x: rand(-13, 13), y: rand(-5.5, 5.5), z: 20.5, hx: 2.2, hy: 2.2, landed: false, said: -9 });
     evAnn('jumbo'); evSay('jumbo'); logEvent('Jumbotron putosi jäälle');
   }, end(e) { if (e.j) e.j.fade = true; } };
+EVENTS.gull = { dur: 9, start(e) {
+    const pk = G.puck; e.g = mkActor('gull', { x: clamp(pk.x + rand(-8, 8), -24, 24), y: 16, z: 12, vz: 0, phase: 'dive', flap: 0 });
+    evAnn('gull'); logEvent('Lokki vei kiekon');
+  }, end(e) { if (e.g) gullDrop(e.g, true); } };
+EVENTS.disco = { dur: 9, start(e) {
+    e.d = mkActor('disco', { x: 0, y: 0, z: 27, tz: 7 }); e.beat = 1.9;
+    G.mods.speed = 1.3; G.mods.accel = 1.35;
+    evAnn('disco'); evSay('disco'); logEvent('Jäähallissa alkoi disko');
+  }, update(e, dt) { e.beat -= dt; if (e.beat <= 0) { e.beat = 1.88; SFX.disco(); } },
+  end(e) { if (e.d) e.d.leaving = true; } };
+function gullDrop(a, quiet) {
+  const pk = G.puck;
+  if (pk.carry === a) { pk.carry = null; pk.owner = null; pk.vx = a.vx * 0.35; pk.vy = a.vy * 0.35; pk.vz = 0; pk.z = Math.max(0.2, a.z - 0.35); pk.passTo = null; SFX.boing(); comment(fill(pickNR('c:gulld', TXT.ev.gull.drop))); }
+  if (a.phase !== 'leave') { a.phase = 'leave'; a.ex = a.x + rand(-6, 6); SFX.squawk(); }
+}
+const DISCO = ['#ff4fd8', '#4fd8ff', '#ffe14f', '#7dff6b', '#ff7a3d', '#a06bff'];
 const EVENT_KEYS = Object.keys(EVENTS);
 const EVENT_WEIGHT = { jumbo: 0.3 }; // the jumbotron is a rare surprise
-const EVENT_SFX = { rocket: () => SFX.whoosh(), soap: () => SFX.slide(), zamboni: () => SFX.engine(), fish: () => SFX.splat(), jumbo: () => SFX.siren(), sausage: () => SFX.boing(), coach: () => SFX.whistle(), ref: () => SFX.whistle(), mascots: () => SFX.hit(), allcheck: () => SFX.hit() };
+const EVENT_SFX = { gull: () => SFX.squawk(), disco: () => SFX.disco(), rocket: () => SFX.whoosh(), soap: () => SFX.slide(), zamboni: () => SFX.engine(), fish: () => SFX.splat(), jumbo: () => SFX.siren(), sausage: () => SFX.boing(), coach: () => SFX.whistle(), ref: () => SFX.whistle(), mascots: () => SFX.hit(), allcheck: () => SFX.hit() };
 const CHAOS_GAP = [[12, 20], [5, 9], [2.5, 4.5]], CHAOS_FIRST = [[8, 12], [4, 6], [2, 3]];
 function eventGap(first) { const r = (first ? CHAOS_FIRST : CHAOS_GAP)[G.settings.chaos ?? 1] || CHAOS_GAP[1]; return rand(r[0], r[1]); }
 function enabledEvents() { const off = G.settings.off || []; return EVENT_KEYS.filter(k => !off.includes(k)); }
@@ -1182,6 +1249,7 @@ function startEvent(key) {
 function endEvent(silent) {
   const e = G.ev; if (!e) return;
   if (e.def.end) e.def.end(e);
+  G.puck.carry = null;
   G.ev = null; G.mods = baseMods(); G.teamMod = [{}, {}]; G.freeze = false;
   G.evTimer = eventGap();
 }
@@ -1448,6 +1516,34 @@ function updateActor(a, dt) {
       }
       break;
     }
+    case 'gull': {
+      a.flap += dt * (a.phase === 'dive' ? 7 : 15);
+      let tx, ty, tz, spd;
+      if (a.phase === 'dive') { tx = pk.x; ty = pk.y; tz = 0.4; spd = 15; }
+      else if (a.phase === 'carry') { tx = a.tx; ty = a.ty; tz = 5.2; spd = 9; }
+      else { tx = a.ex; ty = 22; tz = 18; spd = 11; }
+      const dx = tx - a.x, dy = ty - a.y, dz = tz - a.z, d = Math.hypot(dx, dy, dz) || 1, kk = 1 - Math.exp(-dt * 4);
+      a.vx += (dx / d * spd - a.vx) * kk; a.vy += (dy / d * spd - a.vy) * kk; a.vz += (dz / d * spd - a.vz) * kk;
+      a.x += a.vx * dt; a.y += a.vy * dt; a.z = Math.max(0.3, a.z + a.vz * dt);
+      if (hyp(a.vx, a.vy) > 0.5) a.ang = Math.atan2(a.vy, a.vx);
+      if (a.phase === 'dive') {
+        if (G.state !== 'play' || pk.inNet) gullDrop(a, true);
+        else if (d < 1.0) {
+          if (pk.owner) { const o = pk.owner; loosePuck(0, 0); o.pickCD = 1.2; }
+          pk.carry = a; pk.slide = null; pk.passTo = null; pk.ghost = null; a.phase = 'carry'; SFX.squawk(); SFX.whoosh();
+          do { a.tx = rand(-20, 20); a.ty = rand(-9, 9); } while (hyp(a.tx - a.x, a.ty - a.y) < 11);
+          evSay('gull'); G.excite = Math.max(G.excite, 0.7);
+        }
+      } else if (a.phase === 'carry' && hyp(dx, dy) < 1.2) gullDrop(a);
+      else if (a.phase === 'leave') { a.alpha -= dt * 0.45; if (a.alpha <= 0 || a.z > 16) a.remove = true; }
+      return;
+    }
+    case 'disco': {
+      a.ang += dt * 1.4;
+      if (a.leaving) { a.tz = 30; a.alpha -= dt * 0.7; if (a.alpha <= 0) a.remove = true; }
+      a.z += (a.tz - a.z) * (1 - Math.exp(-dt * 1.6));
+      return;
+    }
     case 'fish': {
       const k = Math.exp(-0.35 * dt); a.vx *= k; a.vy *= k; a.x += a.vx * dt; a.y += a.vy * dt; a.ang += (a.spinV || 0) * dt; a.spinV *= Math.exp(-0.5 * dt);
       confine(a, 0.4, 0.8); pushOutGoals(a, 0.4);
@@ -1595,6 +1691,11 @@ function updateActor(a, dt) {
 // ------------------------------ PUCK ----------------------------------
 function updatePuck(dt) {
   const pk = G.puck;
+  if (pk.carry) {
+    const a = pk.carry;
+    if (a.remove || !G.actors.includes(a)) pk.carry = null;
+    else { pk.owner = null; pk.x = a.x; pk.y = a.y; pk.z = Math.max(0, a.z - 0.35); pk.vx = a.vx; pk.vy = a.vy; pk.vz = 0; pk.trail.length = 0; return; }
+  }
   if (pk.slide) { // faceoff draw: a short protected slide back to the last man
     const s = pk.slide, to = s.to; s.t += dt;
     if (!to || !onIce(to) || pk.owner) { pk.slide = null; }
@@ -1648,7 +1749,7 @@ function updatePuck(dt) {
         if (d < 0.24 && d > 0) {
           const nx = dx / d, ny = dy / d, vn = pk.vx * nx + pk.vy * ny;
           pk.x = sg * GX + nx * 0.24; pk.y = py2 + ny * 0.24;
-          if (vn < 0) { pk.vx -= 1.8 * vn * nx; pk.vy -= 1.8 * vn * ny; if (-vn > 12) { SFX.post(); if (pk.last && humanTeam(pk.last.team) && G.am && ++G.am.posts >= 3) unlock('post'); comment(say('post')); SFX.ooh(); G.excite = Math.max(G.excite, 0.5); } }
+          if (vn < 0) { pk.vx -= 1.8 * vn * nx; pk.vy -= 1.8 * vn * ny; if (-vn > 12) { SFX.post(); spawn(pk.x, pk.y, pk.z + 0.25, 12, { col: ['#ffd65a', '#fff3c4', '#ffffff'], smin: 2, smax: 7, zmin: 1, zmax: 4, size: 0.05, life: 0.35 }); if (pk.last && humanTeam(pk.last.team) && G.am && ++G.am.posts >= 3) unlock('post'); comment(say('post')); SFX.ooh(); G.excite = Math.max(G.excite, 0.5); } }
         }
       }
     }
@@ -1700,7 +1801,7 @@ function updatePuck(dt) {
   else if (sp > 21 && !pk.inNet) { pk.trail.push([pk.x, pk.y, pk.z]); if (pk.trail.length > 6) pk.trail.shift(); } else if (pk.trail.length) pk.trail.shift();
 }
 function pickupCheck() {
-  const pk = G.puck; if (pk.owner || pk.slide || pk.inNet || (G.state !== 'play' && G.state !== 'shootout')) return;
+  const pk = G.puck; if (pk.owner || pk.carry || pk.slide || pk.inNet || (G.state !== 'play' && G.state !== 'shootout')) return;
   const sp = hyp(pk.vx, pk.vy); let best = null, bd = 1e9;
   const list = G.players.filter(p => onIce(p) && (!p.isGoalie || p.goalieMode !== 'net'));
   const m = mummo(); if (m) list.push(m);
@@ -1754,7 +1855,7 @@ function scoreGoal(sg) {
   spawn(sg * GX, 0, 1, 70, { col: ['#ffc629', '#ffffff', TEAM[team].jersey, TEAM[team].trim], smin: 2, smax: 9, zmin: 3, zmax: 9, life: 2.2, size: 0.12, conf: true });
   for (const p of G.players) { if (p.team === team) p.jump = 2.2; p.celType = null; }
   if (sh && sh.kind === 'player' && !sh.isGoalie) { // every scorer picks his own celebration
-    sh.celType = pick(['stick', 'knees', 'fall', 'pump', 'stick', 'knees']);
+    sh.celType = pick(['stick', 'knees', 'fall', 'pump', 'spin', 'guitar', 'stick', 'knees']);
     if (sh.celType === 'knees') { const a = hyp(sh.vx, sh.vy) > 1 ? Math.atan2(sh.vy, sh.vx) : sh.ang; sh.vx = Math.cos(a) * 7.5; sh.vy = Math.sin(a) * 7.5; sh.jump = 0; }
     if (sh.celType === 'fall') { sh.celFall = 1.7; sh.jump = 0; }
   }
@@ -1825,7 +1926,7 @@ function pickMvp() {
 }
 function endMatch() {
   if (G.demo) { startMatch(true); return; }
-  endEvent(true); achEnd(); recordResult();
+  endEvent(true); achEnd(); recEnd(); recordResult();
   if (G.mode === 'so') { G.mvp = null; G.state = 'over'; showOver(); return; }
   const mv = pickMvp();
   if (!mv) { G.state = 'over'; showOver(); return; }
@@ -1921,7 +2022,7 @@ function startPlayoffs() {
 function advancePlayoffs() {
   const s = G.season, po = s.po;
   if (po.stage === 'semi' && po.series.every(x => x.done)) { po.semis = po.series; po.stage = 'final'; po.series = [mkSeries(po.semis[0].win, po.semis[1].win)]; po.fresh = true; }
-  else if (po.stage === 'final' && po.series[0].done) { s.champion = po.series[0].win; s.stage = 'done'; if (s.champion === s.team) unlock('champ'); }
+  else if (po.stage === 'final' && po.series[0].done) { s.champion = po.series[0].win; s.stage = 'done'; if (s.champion === s.team) unlock('champ'); recSeason(s); }
 }
 function simRestPlayoffs() { const s = G.season; let guard = 0; while (s.stage === 'playoffs' && guard++ < 40) { for (const se of s.po.series) if (!se.done) simSeriesGame(se); advancePlayoffs(); } }
 function updateHelmets() { // the golden helmet belongs to each team's points leader; on a tie the holder keeps it
@@ -2141,7 +2242,7 @@ function update(dt) {
       const R = G.replay; R.t += dt; R.rate = replayRate(R, R.f); R.f += dt * 60 * R.rate; R.idx = Math.floor(R.f);
       while (R.seg < R.segs.length - 1 && R.f >= R.segs[R.seg].to) R.seg++;
       R.phase = R.seg;
-      const skip = G.press.some(p => p.check || p.pass || p.shoot);
+      const skip = !G.clipRec && G.press.some(p => p.check || p.pass || p.shoot);
       if (skip || R.f >= R.b || R.t > 8.5) afterGoal();
       break;
     }
@@ -2233,6 +2334,7 @@ const FS_LIT = `#version 300 es
 precision highp float; precision highp sampler2DShadow;
 in vec3 vN; in vec3 vW; in vec4 vCol; in vec4 vMat; in vec4 vL;
 uniform vec3 uLightDir; uniform vec3 uCamPos; uniform sampler2DShadow uShadow; uniform float uShadowOn; uniform float uMirror;
+uniform float uDim; uniform vec4 uSpot[2]; uniform vec3 uSpotCol;
 out vec4 o;
 float shadowF() {
   if (uShadowOn < 0.5 || uMirror > 0.5) return 1.0;
@@ -2253,6 +2355,11 @@ void main() {
   float spec = pow(max(dot(n, H), 0.0), mix(10.0, 90.0, gloss)) * gloss * (0.3 + 0.7 * sh);
   float rim = pow(1.0 - max(dot(n, V), 0.0), 3.0) * 0.1;
   vec3 c = vCol.rgb * (amb + diff * vec3(1.0, 0.97, 0.92) * 1.2) + spec * 0.55 + rim * vec3(0.55, 0.65, 0.85) * (0.4 + 0.6 * hemi);
+  if (uDim < 0.995) { // light show: everything outside the spotlights goes dark
+    float spk = 0.0; for (int i = 0; i < 2; i++) spk += smoothstep(uSpot[i].z, uSpot[i].z * 0.35, length(vW.xy - uSpot[i].xy)) * uSpot[i].w;
+    spk = min(spk, 1.0) * step(vW.z, 7.0);
+    c *= uDim + (1.0 - uDim) * spk * 1.15; c += vCol.rgb * uSpotCol * spk * (1.0 - uDim) * 0.55;
+  }
   c = mix(c, vCol.rgb * 1.5, vMat.y);
   c *= 1.0 - vMat.z * 0.55;
   if (uMirror > 0.5) c *= 0.6;
@@ -2274,6 +2381,7 @@ precision highp float; precision highp sampler2DShadow;
 in vec2 vUV; in vec3 vW; in vec4 vL;
 uniform sampler2D uTex; uniform sampler2DShadow uShadow; uniform float uShadowOn; uniform vec3 uCamPos; uniform float uAlpha;
 uniform vec4 uGoal; uniform vec3 uLamps[10]; uniform vec4 uSoap;
+uniform float uDim; uniform vec4 uSpot[2]; uniform vec3 uSpotCol;
 out vec4 o;
 void main() {
   vec3 base = pow(texture(uTex, vUV).rgb, vec3(2.2));
@@ -2288,6 +2396,11 @@ void main() {
   for (int i = 0; i < 10; i++) { vec3 d = normalize(uLamps[i] - vW); float k = max(dot(R, d), 0.0); glint += pow(k, 1600.0) * 0.7 + pow(k, 120.0) * 0.012; }
   float fres = pow(1.0 - max(V.z, 0.0), 4.0) * 0.25;
   vec3 c = base * (0.82 + 0.26 * sh) + glint * sh + fres * vec3(0.7, 0.8, 1.0);
+  if (uDim < 0.995) {
+    float spk = 0.0; for (int i = 0; i < 2; i++) spk += smoothstep(uSpot[i].z, uSpot[i].z * 0.35, length(vW.xy - uSpot[i].xy)) * uSpot[i].w;
+    spk = min(spk, 1.0);
+    c *= uDim + (1.0 - uDim) * spk * 1.1; c += uSpotCol * spk * (1.0 - uDim) * 0.42;
+  }
   float gd = length(vW.xy - uGoal.xy); c += vec3(1.0, 0.12, 0.08) * uGoal.z * exp(-gd * gd * 0.08);
   c = mix(c, c * vec3(0.75, 1.05, 1.15) + vec3(0.05, 0.12, 0.14), uSoap.x);
   c = c / (1.0 + c * 0.25);
@@ -2673,7 +2786,7 @@ function buildStatic() {
   // crowd
   crowdInfo = [];
   DIM = 1;
-  const shirts = [TEAM[0].jersey, TEAM[0].jersey, TEAM[0].hud, TEAM[1].jersey, TEAM[1].hud, '#1f2430', '#2c3442', '#3d3d3d', '#5a5f6a', '#6e2f2f', '#2f4f7a', '#e8e8e8', '#6b5a45', '#4b5b3a'];
+  const shirts = [TEAM[0].jersey, TEAM[0].jersey, TEAM[0].jersey, TEAM[0].hud, TEAM[0].hud, TEAM[1].jersey, TEAM[1].hud, '#1f2430', '#2c3442', '#3d3d3d', '#5a5f6a', '#6e2f2f', '#2f4f7a', '#e8e8e8', '#6b5a45', '#4b5b3a'];
   const hairs = ['#2b1d12', '#4a3020', '#8a6a3a', '#c9a36a', '#1a1a1a', '#9a9a9a'];
   const skins = ['#f1c7a5', '#e0ac85', '#c98e62', '#f6d8bf'], step = q === 0 ? 2.1 : 1.05;
   const person = (x, y, z, far, faceX, faceY) => {
@@ -2728,7 +2841,7 @@ function twoBone(sh, hand, len, bend) {
 }
 // builds a world-space frame for a character: W(lf, lr, lz) and optional fall rotation
 function frameOf(e, A, yawOff, roll) {
-  const a = e.ang + yawOff, ca = Math.cos(a), sa = Math.sin(a), jz = (e.jump > 0 ? Math.abs(Math.sin(e.jump * 9)) * 0.45 : 0) + (e.dekeType ? dekeHop(e) : 0) + (e.z0 || 0);
+  const a = e.ang + yawOff, ca = Math.cos(a), sa = Math.sin(a), jz = (e.jump > 0 ? Math.abs(Math.sin(e.jump * 9)) * 0.45 : 0) + (e.dekeType ? dekeHop(e) : 0) + (e.z0 || 0) + (A.airZ || 0);
   const f = [ca, sa, 0], r = [sa, -ca, 0];
   const th = A.fall * 1.42, ax = [-A.fdy, A.fdx, 0], cth = Math.cos(th), sth = Math.sin(th);
   const rot = p => { // rotate about axis through the feet so the body topples in the fall direction
@@ -2745,9 +2858,16 @@ function updAnim(e, A, dt, sp) {
   const turn = dt > 0 ? dA / dt : 0, acc = dt > 0 ? (sp - A.prevSp) / dt : 0; A.prevSp = sp;
   const stn = e.stun > 0 ? e.stun : e.celFall > 0 ? e.celFall : 0;
   if (stn > 0) {
-    if (!A.wasStun) { A.wasStun = true; const vl = hyp(e.vx, e.vy); if (vl > 0.5) { A.fdx = e.vx / vl; A.fdy = e.vy / vl; } else { A.fdx = -Math.cos(e.ang); A.fdy = -Math.sin(e.ang); } }
+    if (!A.wasStun) { A.wasStun = true; const vl = hyp(e.vx, e.vy); if (vl > 0.5) { A.fdx = e.vx / vl; A.fdy = e.vy / vl; } else { A.fdx = -Math.cos(e.ang); A.fdy = -Math.sin(e.ang); }
+      // a hard hit lifts the player off the ice and sends him spinning
+      const hard = e.stun > 0.9 && vl > 3; A.spinV = (Math.random() < 0.5 ? -1 : 1) * (hard ? rand(5, 9) : rand(1.5, 3.5)); A.spinYaw = 0; A.airT = hard ? 0.4 : 0; }
     A.fall = stn > 0.4 ? Math.min(1, A.fall + dt * 4.5) : Math.min(A.fall, stn / 0.4);
-  } else { A.wasStun = false; A.fall = Math.max(0, A.fall - dt * 5); }
+    A.spinYaw = (A.spinYaw || 0) + (A.spinV || 0) * dt; A.spinV = (A.spinV || 0) * Math.exp(-dt * 2.6);
+    if (stn < 0.45) A.spinYaw *= Math.exp(-dt * 9); // turns back to his own heading while getting up
+    A.airT = Math.max(0, (A.airT || 0) - dt); A.airZ = A.airT > 0 ? Math.sin((1 - A.airT / 0.4) * Math.PI) * 0.38 : 0;
+    A.flail = (A.flail || 0) + ((stn > 0.55 ? 1 : 0) - (A.flail || 0)) * (1 - Math.exp(-dt * 9));
+    A.getUp = stn < 0.5 ? Math.sin(stn / 0.5 * Math.PI) : 0;
+  } else { A.wasStun = false; A.fall = Math.max(0, A.fall - dt * 5); A.spinYaw = (A.spinYaw || 0) * Math.exp(-dt * 12); A.airZ = 0; A.flail = (A.flail || 0) * Math.exp(-dt * 12); A.getUp = 0; }
   return [turn, acc];
 }
 // ------------------------------ skinned bodies -------------------------
@@ -2902,33 +3022,48 @@ function buildSkater(e, dt) {
   const st = styleOf(e), A = animOf(e), sp = hyp(e.vx, e.vy), amp = Math.min(1, sp / 8);
   const [turn, acc] = updAnim(e, A, dt, sp);
   const isCoach = st.type === 'coach', isMum = st.type === 'mummo', isRef = st.type === 'ref', skater = st.type === 'skater';
-  if (acc < -15 && sp > 1.5 && A.stopT <= 0 && !isCoach && e.stun <= 0) { A.stopT = 0.42; A.stopSide = Math.random() < 0.5 ? -1 : 1; }
+  const live = dt > 0 && !G.paused && (G.state === 'play' || G.state === 'shootout'); // particles only while the game really runs
+  const snow = (n, f, r, pw) => { const ca = Math.cos(e.ang), sa = Math.sin(e.ang); spawn(e.x + ca * f + sa * r, e.y + sa * f - ca * r, 0.06, n, { smin: 0.5, smax: 2.2 * pw, zmin: 0.6, zmax: 2.4 * pw, size: 0.06, life: 0.45, vx: e.vx * 0.55, vy: e.vy * 0.55 }); };
+  if (acc < -15 && sp > 1.5 && A.stopT <= 0 && !isCoach && e.stun <= 0) { A.stopT = 0.42; A.stopSide = Math.random() < 0.5 ? -1 : 1;
+    if (live) { snow(16, 0.35, 0, 1.6); const dx = e.vx / sp, dy = e.vy / sp; // the skates leave a fan of scrape marks on the ice
+      for (let k2 = -2; k2 <= 2; k2++) { const ox = e.x - dy * k2 * 0.11, oy = e.y + dx * k2 * 0.11; G.tracks.push([ox, oy, ox + dx * 0.95, oy + dy * 0.95]); } } }
+  // burst = hard acceleration: deeper lean, quicker and longer strides, ice chips from the pushing skate
+  A.acc = (A.acc || 0) + (clamp(acc / 11, 0, 1) - (A.acc || 0)) * (1 - Math.exp(-dt * 6)); const burst = skater ? A.acc : 0;
+  A.spT = (A.spT || 0) - dt;
+  if (live && skater && A.spT <= 0 && e.stun <= 0) {
+    if (A.stopT > 0.1) { snow(4, 0.3, 0, 1.3); A.spT = 0.05; }
+    else if (sp > 6 && Math.abs(turn) > 3.2) { snow(3, -0.1, turn > 0 ? 0.25 : -0.25, 1); A.spT = 0.07; }
+    else if (burst > 0.55 && sp > 1 && sp < 7) { snow(2, -0.35, Math.sin(A.ph || 0) > 0 ? 0.3 : -0.3, 0.8); A.spT = 0.1; }
+  }
   A.stopT = Math.max(0, A.stopT - dt);
   const stop = A.stopT > 0 ? Math.min(1, A.stopT / 0.14) : 0, k = 1 - Math.exp(-dt * 8);
   const glideT = !isCoach && sp > 5 && Math.abs(acc) < 2.5 ? 1 : 0; A.glide = (A.glide || 0) + (glideT - (A.glide || 0)) * (1 - Math.exp(-dt * 2.5));
-  const sAmp = amp * (1 - 0.55 * A.glide);
-  A.ph = (A.ph || 0) + dt * (sp < 0.3 ? 0 : isCoach ? 3 + sp * 1.2 : (2.2 + sp * 0.42) * (1 - 0.45 * A.glide));
+  const sAmp = Math.min(1.25, amp * (1 - 0.55 * A.glide) * (1 + 0.5 * burst) + burst * 0.25);
+  A.ph = (A.ph || 0) + dt * (sp < 0.3 ? 0 : isCoach ? 3 + sp * 1.2 : (2.2 + sp * 0.42) * (1 - 0.45 * A.glide) + burst * 2.6);
   const isMvp = G.state === 'mvp' && G.mvp && G.mvp.p === e, cel = (scoringTeam() === e.team && !G.demo) || isMvp ? 1 : 0; A.cel += (cel - A.cel) * k;
   const kneel = A.cel > 0.5 && e.celType === 'knees' ? 1 : 0;
+  const otK = skater && e.otAt != null && G.t - e.otAt >= 0 && G.t - e.otAt < 0.42 ? Math.sin((G.t - e.otAt) / 0.42 * Math.PI) : 0; // a one-timer drops to one knee
+  const getUp = A.getUp || 0, flail = A.flail || 0, guitar = A.cel > 0.5 && e.celType === 'guitar';
   const owner = isOwner(e), pk = G.puck, hasStick = !isCoach && !isRef && !(e.noStick > 0);
   // posture: pitch = forward lean of the spine, crouch = knee bend, tw = shoulder twist for shots and checks
   const wind = hasStick && e.charge > 0 ? clamp((e.charge - 0.15) / 0.85, 0, 1) : hasStick && e.fakeT > 0 ? Math.sin((0.35 - e.fakeT) / 0.35 * Math.PI) * 0.75 : 0;
   const shotS = hasStick && !owner && e.shotCD > 0.25 ? clamp((0.55 - e.shotCD) / 0.3, 0, 1) : -1;
   const upright = isCoach ? 0.2 : isRef ? 0.55 : isMum ? 0.45 : 1;
   const chk = e.checkT > 0 ? 1 : 0;
-  const tl = ((0.27 * amp) * (1 - 0.6 * chk) + chk * 0.12 + wind * 0.1 + (shotS >= 0 ? 0.12 : 0) - stop * 0.1 - A.cel * 0.18 + A.glide * 0.05) * upright;
-  const tc = isCoach ? 0.02 : ((0.07 + 0.2 * amp) * (1 - 0.35 * chk) + stop * 0.18 + wind * 0.1 - A.cel * 0.05) * (isRef ? 0.7 : 1) + A.fall * 0.25 + kneel * 0.45 + (e.dekeType === 'legs' && dekeK(e) >= 0 ? Math.sin(dekeK(e) * Math.PI) * 0.4 : 0);
-  const ttw = !hasStick ? 0 : e.checkT > 0 ? 0.5 : wind > 0 ? 0.6 * wind : shotS >= 0 ? 0.6 - 1.1 * easeOut(shotS) : 0;
+  const tl = ((0.27 * amp) * (1 - 0.6 * chk) + chk * 0.12 + wind * 0.1 + (shotS >= 0 ? 0.12 : 0) - stop * 0.1 - A.cel * 0.18 + A.glide * 0.05 + burst * 0.13 - (guitar ? 0.12 : 0)) * upright;
+  const tc = isCoach ? 0.02 : ((0.07 + 0.2 * amp) * (1 - 0.35 * chk) + stop * 0.18 + wind * 0.1 - A.cel * 0.05) * (isRef ? 0.7 : 1) + A.fall * 0.25 + kneel * 0.45 + burst * 0.07 + otK * 0.24 + getUp * 0.38 + (guitar ? 0.12 : 0) + (e.dekeType === 'legs' && dekeK(e) >= 0 ? Math.sin(dekeK(e) * Math.PI) * 0.4 : 0);
+  const ttw = !hasStick ? 0 : e.checkT > 0 ? 0.5 : wind > 0 ? 0.6 * wind : shotS >= 0 ? 0.6 - 1.25 * easeOut(shotS) : !owner && e.passCD > 0.18 ? -0.32 : 0;
   const tr = isCoach ? 0 : clamp(-turn * 0.065 * Math.min(1, sp / 5), -0.45, 0.45) + stop * A.stopSide * 0.32;
   A.lean += (tl - A.lean) * k; A.crouch += (tc - A.crouch) * k; A.roll += (tr - A.roll) * k; A.tw = (A.tw || 0) + (ttw - (A.tw || 0)) * (1 - Math.exp(-dt * 14));
-  const c = A.crouch, ph = A.ph, pitch = 0.08 + A.lean * 1.5, tw = A.tw;
-  const { W } = frameOf(e, A, stop * A.stopSide * Math.PI * 0.45 + dekeYaw(e), A.roll);
+  const c = A.crouch, ph = A.ph, pitch = 0.08 + A.lean * 1.5 + (e.bow || 0) * 1.1, tw = A.tw;
+  const { W } = frameOf(e, A, stop * A.stopSide * Math.PI * 0.45 + dekeYaw(e) + (A.spinYaw || 0) + (A.cel > 0.5 && e.celType === 'spin' ? G.t * 8.5 : 0), A.roll);
   const alpha = e.alpha == null ? 1 : e.alpha; if (alpha < 0.05) return;
   const up3 = norm(sub(W(0, 0, 1.5), W(0, 0, 0.5))), right3 = norm(sub(W(0, 1, 1), W(0, 0, 1))), fwd3 = norm(sub(W(1, 0, 1), W(0, 0, 1)));
   // ---- weight shift, hip and shoulder rotation
   const push = s => isCoach || sp < 0.4 ? 0 : 0.5 + 0.5 * Math.sin(ph + (s > 0 ? Math.PI : 0));
-  const shift = isCoach ? 0 : (push(1) - push(-1)) * -0.07 * sAmp;
-  const yawP = isCoach ? 0 : Math.sin(ph) * 0.11 * sAmp, bob = isCoach ? Math.abs(Math.sin(ph)) * 0.03 : Math.abs(Math.cos(ph)) * 0.025 * sAmp;
+  const idle = !isCoach && sp < 0.4 ? 1 : 0, ip = G.t * 1.15 + (e.num || 0) * 1.7; // standing still: weight shifts from skate to skate, the chest breathes
+  const shift = isCoach ? 0 : (push(1) - push(-1)) * -0.07 * sAmp + idle * Math.sin(ip) * 0.028;
+  const yawP = isCoach ? 0 : Math.sin(ph) * (0.11 + 0.05 * burst) * sAmp, bob = isCoach ? Math.abs(Math.sin(ph)) * 0.03 : Math.abs(Math.cos(ph)) * 0.025 * sAmp + idle * Math.sin(ip * 1.9) * 0.006;
   // the spine leans forward from the hips; the hips move back as the chest goes forward, like a real skater
   const hipZ = 0.95 - c + bob, hipX = -0.03 - Math.sin(pitch) * 0.2;
   const sp3 = d => { const pa = pitch * (0.7 + 0.6 * clamp(d / 0.65, 0, 1)); return [hipX + Math.sin(pa) * d, hipZ + Math.cos(pa) * d]; };
@@ -2948,6 +3083,10 @@ function buildSkater(e, dt) {
     }
     if (kneel) { flf = -0.42; flr = s * 0.16; flz = 0.06; toeOut = 0; edge = 0; }
     if (stop) { flf = flf * (1 - stop) + (s > 0 ? 0.24 : -0.16) * stop; flr = flr * (1 - stop) + s * 0.1 * stop; flz = flz * (1 - stop) + 0.05 * stop; toeOut *= 1 - stop; edge = edge * (1 - stop) - A.stopSide * 0.45 * stop; }
+    if (skater && shotS >= 0) { const rel = Math.sin(Math.min(1, shotS * 1.15) * Math.PI); if (s > 0) { flf -= 0.36 * rel; flz += 0.22 * rel; flr += 0.05 * rel; } else flf += 0.13 * rel; } // weight onto the front skate, the back leg kicks up
+    else if (skater && wind > 0) { flr += s * 0.06 * wind; if (s > 0) flf -= 0.1 * wind; }
+    if (otK > 0 && s > 0) { flf -= 0.3 * otK; flz += 0.02; }
+    if (flail > 0.01) { const w = Math.sin(G.t * 17 + s * 1.3) * flail; flr += s * 0.17 * flail; flz += Math.max(0, w) * 0.24; flf += w * 0.13; }
     const foot = W(flf, flr, flz);
     const fa = Math.atan2(fwd3[1], fwd3[0]) - toeOut, fd = [Math.cos(fa), Math.sin(fa), 0];
     const eu = norm(add([0, 0, 1], mulv([Math.sin(fa), -Math.cos(fa), 0], edge)));
@@ -2986,7 +3125,8 @@ function buildSkater(e, dt) {
     else if (!owner && e.passCD > 0.18) { const kp = (e.passCD - 0.18) / 0.17; Bw = W(0.95, 0.4 * (kp * 2 - 1), 0.03); }
     if (e.checkT > 0) { Th = SW(0.35, 0.25, -0.05); Bw = W(0.7, 0.35, 0.3); }
     const free = !owner && sp > 6.5 && !(e.charge > 0) && shotS < 0 && !(e.checkT > 0);
-    if (A.cel > 0.5 && e.celType === 'pump') { const pu = Math.max(0, Math.sin(G.t * 11)); Th = SW(0.25, 0.3, -0.12); Bw = W(0.8, -0.5, 0.03); freeR = SW(0.45 + pu * 0.35, 0.28, 0.3); }
+    if (guitar) { Th = W(0.28, -0.42, 1.38); Bw = W(0.16, 0.8, 0.98); freeR = W(0.33, 0.14 + Math.sin(G.t * 21) * 0.09, 1.06 + Math.sin(G.t * 21) * 0.1); } // air guitar on the stick
+    else if (A.cel > 0.5 && e.celType === 'pump') { const pu = Math.max(0, Math.sin(G.t * 11)); Th = SW(0.25, 0.3, -0.12); Bw = W(0.8, -0.5, 0.03); freeR = SW(0.45 + pu * 0.35, 0.28, 0.3); }
     else if (A.cel > 0.5) { Th = W(0.1, -0.28, 2.05); Bw = W(0.35, 0.55, 2.6); freeR = W(0.15, 0.32, 2.1 + Math.sin(G.t * 14) * 0.12); }
     else if (free) { Bw = W(0.8, -0.5, 0.03); freeR = SW(0.1, -0.05 + Math.sin(ph) * 0.38, 0.33); }
     Bh = freeR || lerp3(Th, Bw, 0.36);
@@ -2994,10 +3134,18 @@ function buildSkater(e, dt) {
     const crazy = e.mode === 'crazy';
     Th = crazy ? W(0.2, -0.35, 1.9 + Math.sin(G.t * 12) * 0.2) : W(Math.sin(ph) * 0.24 * amp + 0.05, -0.3, 1.0);
     Bh = crazy ? W(0.2, 0.35, 1.9 + Math.cos(G.t * 12) * 0.2) : W(-Math.sin(ph) * 0.24 * amp + 0.05, 0.3, 1.0);
+    if (e.blind) Bh = W(0.42, 0.3, 0.85);
   } else { Th = W(0.25 + Math.sin(G.t * 9) * 0.15, -0.38, 1.55 + Math.sin(G.t * 10) * 0.2); Bh = W(0.05 + Math.sin(G.t * 12) * 0.25, 0.32, 0.95); }
+  if (flail > 0.01) { // arms and stick fly around while he goes down
+    const a1 = Math.sin(G.t * 15 + (e.num || 0)), a2 = Math.cos(G.t * 13 + (e.num || 0));
+    Th = lerp3(Th, W(0.15 + a1 * 0.2, -0.64, 1.35 + a2 * 0.25), flail); Bh = lerp3(Bh, W(0.15 - a1 * 0.2, 0.64, 1.35 - a2 * 0.25), flail);
+    if (Bw) Bw = lerp3(Bw, W(0.75 + a2 * 0.2, -1.0, 1.0 + a1 * 0.35), flail);
+  }
+  if (getUp > 0.01 && Bh) Bh = lerp3(Bh, W(0.36, 0.3, 0.1), getUp * 0.85); // pushes himself up with a hand on the ice
   const armLen = 0.31 * S;
   const [eL, hL] = twoBone(shL, Th, armLen, add(mulv(right3, -0.7), mulv(up3, -0.7)));
   const [eR, hR] = twoBone(shR, Bh, armLen, add(mulv(right3, 0.7), mulv(up3, -0.7)));
+  if (e.blind) { const tip = W(1.05, 0.3 + Math.sin(G.t * 5) * 0.45, 0.02); cyl(hR, tip, 0.017, '#f4f4f4', 0.4); cyl(tip, lerp3(tip, hR, 0.16), 0.02, '#d42a2a', 0.4); }
   loft([shL, eL, hL], 14, 10, fwd3, armProf(st, false)); loft([shR, eR, hR], 14, 10, fwd3, armProf(st, false));
   const glove = isCoach || isMum ? SKIN : st.glove;
   for (const [h, el] of [[hL, eL], [hR, eR]]) {
@@ -3011,15 +3159,21 @@ function buildSkater(e, dt) {
     if (e.broken > 0) cyl(knob, lerp3(Th, Bw, 0.5), 0.016 * S, '#26282c', 0.6);
     else {
       const ang = Math.atan2(fwd3[1], fwd3[0]) + 0.55, bd = [Math.cos(ang), Math.sin(ang), 0];
-      cyl(knob, Bw, 0.016 * S, '#26282c', 0.7); cyl(knob, lerp3(knob, Bw, 0.12), 0.02 * S, '#f4f4f4', 0.15);
+      const flex = shotS >= 0.08 && shotS < 0.5 ? Math.sin((shotS - 0.08) / 0.42 * Math.PI) : 0;
+      if (flex > 0.03) { const mid = add(lerp3(knob, Bw, 0.6), mulv(fwd3, -0.11 * S * flex)); cyl(knob, mid, 0.016 * S, '#26282c', 0.7); cyl(mid, Bw, 0.016 * S, '#26282c', 0.7); }
+      else cyl(knob, Bw, 0.016 * S, '#26282c', 0.7);
+      cyl(knob, lerp3(knob, Bw, 0.12), 0.02 * S, '#f4f4f4', 0.15);
       boxO(add(Bw, mulv(bd, 0.13 * S)), bd, [0, 0, 1], 0.3 * S, 0.016 * S, 0.065 * S, '#eef0f2', 0.2);
     }
   }
   // ---- head: face, helmet with ridge, visor and chin strap
   let lookYaw = 0;
-  if (pk && !isCoach) { lookYaw = Math.atan2(pk.y - e.y, pk.x - e.x) - Math.atan2(fwd3[1], fwd3[0]); while (lookYaw > Math.PI) lookYaw -= TAU; while (lookYaw < -Math.PI) lookYaw += TAU; lookYaw = clamp(lookYaw, -1.0, 1.0); }
+  if (pk && !isCoach && !e.blind) { lookYaw = Math.atan2(pk.y - e.y, pk.x - e.x) - Math.atan2(fwd3[1], fwd3[0]); while (lookYaw > Math.PI) lookYaw -= TAU; while (lookYaw < -Math.PI) lookYaw += TAU; lookYaw = clamp(lookYaw, -1.0, 1.0); }
   A.look += (lookYaw - A.look) * k;
   const ha = Math.atan2(fwd3[1], fwd3[0]) + A.look, hf = [Math.cos(ha), Math.sin(ha), 0], hr = [Math.sin(ha), -Math.cos(ha), 0];
+  if (e.blind) { const L = s => add(head, add(mulv(hf, 0.112 * S), add(mulv(hr, s * 0.045 * S), [0, 0, 0.012 * S])));
+    for (const s of [-1, 1]) ellip(L(s), mulv(hf, 0.02 * S), mulv(hr, 0.04 * S), [0, 0, 0.032 * S], '#050505', 0.95);
+    cyl(L(-1), L(1), 0.008 * S, '#050505', 0.9); }
   if (isCoach) {
     sph(head, 0.12 * S, SKIN, 0.3);
     for (const s of [-1, 1]) sph(add(head, add(mulv(hr, s * 0.1 * S), add(mulv(hf, -0.02 * S), [0, 0, -0.02 * S]))), 0.045 * S, '#8c8c8c', 0.1);
@@ -3066,7 +3220,14 @@ function buildGoalie(e, dt) {
   const react = conceded && G.state === 'goal' ? ['slam', 'shake', 'sky'][((G.score[0] + G.score[1]) * 7 + (e.num || 0)) % 3] : null, ru = G.state === 'goal' ? 2.8 - G.stateT : 0;
   const shake = react === 'shake' ? Math.sin(ru * 13) * 0.35 * Math.min(1, ru * 2) : 0, sky = react === 'sky' ? Math.min(1, ru * 1.5) : 0;
   const slam = react === 'slam' ? Math.max(0, Math.sin(Math.min(ru, 1.9) * 9.4)) : 0;
-  const { W, f, r } = frameOf(e, A, shake * 0.4, sty === 'pad' ? sd * 0.38 * fl0 : 0), fly = A.fly, c = 0.3 + fly * (sty === 'split' ? 0.48 : 0.22);
+  // he follows the puck: upright and relaxed when it is far away, low and ready when it comes close, leaning to its side
+  const pk = G.puck, pdx = pk ? pk.x - e.x : 0, pdy = pk ? pk.y - e.y : 0, pd = hyp(pdx, pdy), inPlay = G.state === 'play' || G.state === 'shootout' || G.state === 'replay';
+  A.near = (A.near ?? 0.5) + ((inPlay && pd < 15 ? clamp((15 - pd) / 9, 0, 1) : 0.25) - (A.near ?? 0.5)) * (1 - Math.exp(-dt * 4));
+  const near = A.near, ca0 = Math.cos(e.ang), sa0 = Math.sin(e.ang), pr = pdx * sa0 - pdy * ca0;
+  A.gl = (A.gl || 0) + (clamp(pr * 0.035, -0.13, 0.13) * near - (A.gl || 0)) * (1 - Math.exp(-dt * 7));
+  let gyaw = pk ? Math.atan2(pdy, pdx) - e.ang : 0; while (gyaw > Math.PI) gyaw -= TAU; while (gyaw < -Math.PI) gyaw += TAU; A.look += (clamp(gyaw, -0.9, 0.9) - A.look) * (1 - Math.exp(-dt * 9));
+  const ready = inPlay && !conceded ? Math.sin(G.t * 7 + (e.num || 0)) * 0.012 * near : 0, tpush = clamp(vlat * 0.05, -0.22, 0.22) * (1 - fl0);
+  const { W, f, r } = frameOf(e, A, shake * 0.4, (sty === 'pad' ? sd * 0.38 * fl0 : 0) + tpush + A.gl * 0.6), fly = A.fly, c = 0.19 + near * 0.15 + ready + fly * (sty === 'split' ? 0.48 : 0.22);
   const up3 = [0, 0, 1];
   for (const s of [-1, 1]) {
     const shuf = Math.sin(A.gph + (s > 0 ? Math.PI : 0)) * 0.06;
@@ -3082,12 +3243,12 @@ function buildGoalie(e, dt) {
     ellip(add(kn, mulv(pf, 0.04 * S)), mulv(pf, 0.1 * S), mulv(pr2, 0.13 * S), mulv(pd, 0.12 * S), '#f4f7fb', 0.35);
     boxO(add(ft, mulv(f, 0.06 * S)), f, [0, 0, 1], 0.3 * S, 0.1 * S, 0.1 * S, '#202226', 0.5);
   }
-  const chest = W(conceded ? 0.15 - sky * 0.18 : 0.06, 0, 1.36 - c + breath), head = W(conceded ? 0.2 - sky * 0.3 : 0.09, shake * 0.06, (conceded ? 1.5 + sky * 0.06 : 1.58) - c);
+  const chest = W(conceded ? 0.15 - sky * 0.18 : 0.06 + near * 0.04, A.gl * 0.5, 1.36 - c + breath), head = W(conceded ? 0.2 - sky * 0.3 : 0.09 + near * 0.05, shake * 0.06 + A.gl, (conceded ? 1.5 + sky * 0.06 : 1.58) - c);
   loft([W(0, 0, 0.74 - c), W(0, 0, 0.9 - c), W(0.03, 0, 1.12 - c), chest, W(0.07, 0, 1.47 - c), W(0.08, 0, 1.55 - c)], 16, 18, r, torsoProf(st, PR_TORSO_G));
   const shL = W(0.05, -0.28, 1.32 - c), shR = W(0.05, 0.28, 1.32 - c);
   ellip(shL, mulv(f, 0.14 * S), mulv(r, 0.12 * S), [0, 0, 0.12 * S], st.jersey, 0.07); ellip(shR, mulv(f, 0.14 * S), mulv(r, 0.12 * S), [0, 0, 0.12 * S], st.jersey, 0.07);
-  const gw = sty === 'glove' ? fly : 0, arms = sky * 0.5;
-  const gl2 = W(0.36 + gw * 0.05 - arms * 0.3, -0.5 - gw * 0.22 - arms * 0.25, 0.95 - c * 0.2 + (sd < 0 && sty !== 'glove' ? fly * 0.55 : 0) + gw * 0.95 + arms * 0.4);
+  const gw = sty === 'glove' ? fly : 0, arms = sky * 0.5, rise = pk && !pk.owner && pd < 9 ? clamp(pk.z * 0.9, 0, 0.5) * near : 0;
+  const gl2 = W(0.36 + gw * 0.05 - arms * 0.3, -0.5 - gw * 0.22 - arms * 0.25, 0.95 - c * 0.2 + (sd < 0 && sty !== 'glove' ? fly * 0.55 : 0) + gw * 0.95 + arms * 0.4 + rise + near * 0.06);
   const bl = W(0.36 - arms * 0.3, 0.44 + arms * 0.25, 0.84 - c * 0.2 + (sd > 0 && sty !== 'glove' ? fly * 0.45 : 0) + slam * 0.75 + arms * 0.4);
   const [eL, hL] = twoBone(shL, gl2, 0.32 * S, add(mulv(r, -0.8), [0, 0, -0.6]));
   const [eR, hR] = twoBone(shR, bl, 0.32 * S, add(mulv(r, 0.8), [0, 0, -0.6]));
@@ -3098,10 +3259,11 @@ function buildGoalie(e, dt) {
   if (react === 'slam' && ru > 0.15 && ru < 1.9 && slam < 0.08 && !e._slamHit) { e._slamHit = true; SFX.tap && SFX.tap(); spawn(bladeP[0], bladeP[1], 0.1, 6, { smin: 1, smax: 3, size: 0.06, life: 0.4 }); } else if (slam > 0.5) e._slamHit = false;
   cyl(hR, pad1, 0.018 * S, '#26282c', 0.6); cyl(pad1, bladeP, 0.04 * S, '#26282c', 0.6);
   boxO(add(bladeP, mulv(r, -0.12 * S)), [-r[0], -r[1], 0], [0, 0, 1], 0.34 * S, 0.02 * S, 0.08 * S, '#eef0f2', 0.3);
-  ellip(head, mulv(f, 0.15 * S), mulv(r, 0.135 * S), [0, 0, 0.15 * S], '#f4f7fb', 0.9);
-  cap(add(head, add(mulv(f, -0.1 * S), [0, 0, 0.1 * S])), add(head, add(mulv(f, 0.08 * S), [0, 0, 0.13 * S])), 0.035 * S, st.jersey, 0.6);
-  for (const o of [-0.06, 0, 0.06]) cyl(add(head, add(mulv(f, 0.14 * S), add(mulv(r, o * S), [0, 0, -0.09 * S]))), add(head, add(mulv(f, 0.15 * S), add(mulv(r, o * S), [0, 0, 0.04 * S]))), 0.007 * S, '#222222', 0.9);
-  cyl(add(head, add(mulv(f, 0.145 * S), add(mulv(r, -0.085 * S), [0, 0, -0.03 * S]))), add(head, add(mulv(f, 0.145 * S), add(mulv(r, 0.085 * S), [0, 0, -0.03 * S]))), 0.007 * S, '#222222', 0.9);
+  const hya = e.ang + (conceded ? 0 : A.look) + shake * 0.4, hf = [Math.cos(hya), Math.sin(hya), 0], hr = [Math.sin(hya), -Math.cos(hya), 0]; // the mask turns after the puck
+  ellip(head, mulv(hf, 0.15 * S), mulv(hr, 0.135 * S), [0, 0, 0.15 * S], '#f4f7fb', 0.9);
+  cap(add(head, add(mulv(hf, -0.1 * S), [0, 0, 0.1 * S])), add(head, add(mulv(hf, 0.08 * S), [0, 0, 0.13 * S])), 0.035 * S, st.jersey, 0.6);
+  for (const o of [-0.06, 0, 0.06]) cyl(add(head, add(mulv(hf, 0.14 * S), add(mulv(hr, o * S), [0, 0, -0.09 * S]))), add(head, add(mulv(hf, 0.15 * S), add(mulv(hr, o * S), [0, 0, 0.04 * S]))), 0.007 * S, '#222222', 0.9);
+  cyl(add(head, add(mulv(hf, 0.145 * S), add(mulv(hr, -0.085 * S), [0, 0, -0.03 * S]))), add(head, add(mulv(hf, 0.145 * S), add(mulv(hr, 0.085 * S), [0, 0, -0.03 * S]))), 0.007 * S, '#222222', 0.9);
   const c0 = add(W(0.03, 0, 1.2 - c), mulv(f, -0.215 * S)), sz = 0.34 * S;
   putQ(QD.num, c0[0], c0[1], c0[2], r[0] * sz, r[1] * sz, 0, 0, 0, sz, CS(st.trim === st.jersey ? '#ffffff' : st.trim), 1, ...UV_NUM(st.num));
 }
@@ -3168,6 +3330,36 @@ function buildFlat(a) {
   else if (a.kind === 'cap') { ellip([a.x, a.y, z + 0.09], mulv(f, 0.21), [sa * 0.19, -ca * 0.19, 0], [0, 0, 0.13], a.col, 0.3); boxO([a.x + f[0] * 0.23, a.y + f[1] * 0.23, z + 0.02], f, [0, 0, 1], 0.22, 0.32, 0.02, a.col, 0.3); }
   else if (a.kind === 'lostStick') { const p0 = [a.x - f[0] * 0.75, a.y - f[1] * 0.75, z + 0.02], p1 = [a.x + f[0] * 0.7, a.y + f[1] * 0.7, z + 0.02]; cyl(p0, p1, 0.02, '#26282c', 0.6); boxO([p1[0] + sa * 0.1, p1[1] - ca * 0.1, z + 0.04], [sa, -ca, 0], [0, 0, 1], 0.28, 0.02, 0.06, '#eef0f2', 0.3); }
   else if (a.kind === 'jumbo') buildJumbo(a);
+  else if (a.kind === 'gull') buildGull(a);
+  else if (a.kind === 'disco') buildDisco(a);
+}
+function buildGull(a) {
+  const al = Math.max(0, a.alpha); if (al < 0.05) return;
+  const ca = Math.cos(a.ang), sa = Math.sin(a.ang), K = 2.6, f = [ca, sa, 0], r = [sa, -ca, 0];
+  const P = (lf, lr, lz) => [a.x + (ca * lf + sa * lr) * K, a.y + (sa * lf - ca * lr) * K, a.z + lz * K];
+  ellip(P(0, 0, 0), mulv(f, 0.3 * K), mulv(r, 0.12 * K), [0, 0, 0.11 * K], '#f4f6f8', 0.3);
+  sph(P(0.27, 0, 0.08), 0.09 * K, '#f8f9fb', 0.3);
+  cap(P(0.35, 0, 0.07), P(0.46, 0, 0.05), 0.022 * K, '#f2b632', 0.5); sph(P(0.45, 0, 0.04), 0.018 * K, '#d94a2a', 0.4);
+  for (const s of [-1, 1]) sph(P(0.31, s * 0.06, 0.11), 0.016 * K, '#111111', 0.9);
+  ellip(P(-0.33, 0, 0.02), mulv(f, 0.12 * K), mulv(r, 0.08 * K), [0, 0, 0.02 * K], '#c9d0d8', 0.2);
+  const dive = a.phase === 'dive', fl = Math.sin(a.flap) * (dive ? 0.25 : 0.75), sw = dive ? -0.18 : 0;
+  for (const s of [-1, 1]) {
+    const sh = P(0.04, s * 0.1, 0.05), el = P(sw, s * (0.1 + 0.32 * Math.cos(fl)), 0.05 + 0.32 * Math.sin(fl)), tip = P(sw * 2.2 - 0.05, s * (0.1 + 0.32 * Math.cos(fl) + 0.3 * Math.cos(fl * 1.4)), 0.05 + 0.32 * Math.sin(fl) + 0.3 * Math.sin(fl * 1.4));
+    const m1 = lerp3(sh, el, 0.5), m2 = lerp3(el, tip, 0.5);
+    ellip(m1, mulv(sub(el, sh), 0.55), mulv(f, 0.13 * K), [0, 0, 0.018 * K], '#aab4bf', 0.2);
+    ellip(m2, mulv(sub(tip, el), 0.55), mulv(f, 0.1 * K), [0, 0, 0.016 * K], '#7d8894', 0.2);
+    sph(tip, 0.05 * K, '#1b1d22', 0.3);
+  }
+  if (a.z > 0.6) quadFlat(QD.shad, a.x, a.y, 0.012, 1.0 + Math.min(1, a.z * 0.08), WHITE, 0.32 * al);
+}
+function buildDisco(a) {
+  const al = Math.max(0, a.alpha); if (al < 0.05) return;
+  const t = G.t, col = i => CS(DISCO[(i + (t * 2 | 0)) % DISCO.length]);
+  cyl([a.x, a.y, a.z + 1.0], [a.x, a.y, 27], 0.035, '#20242c', 0.3);
+  sph([a.x, a.y, a.z], 1.05, '#c8d2de', 1.0, 0.25);
+  for (let i = 0; i < 14; i++) { const th = i * 2.399 + a.ang, ph = Math.acos(1 - 2 * (i + 0.5) / 14), x = Math.sin(ph) * Math.cos(th), y = Math.sin(ph) * Math.sin(th), z = Math.cos(ph); if (y > 0.25) continue; quadBill(QD.glow, a.x + x * 1.07, a.y + y * 1.07, a.z + z * 1.07, 0.55, col(i), 0.5 + 0.5 * Math.sin(t * 9 + i * 3)); }
+  quadBill(QD.glow, a.x, a.y, a.z, 4.8, col(0), 0.3 * al);
+  for (let i = 0; i < 18; i++) { const ring = i % 3, rr = 4 + ring * 5.5, an = (i / 18) * TAU + t * (0.5 + ring * 0.22) * (ring === 1 ? -1 : 1); quadFlat(QD.glow, clamp(Math.cos(an) * rr * 1.6, -28, 28), clamp(Math.sin(an) * rr, -12.5, 12.5), 0.03, 2.6, col(i), 0.45 * al); }
 }
 function buildJumbo(a) {
   const al = Math.max(0, a.alpha); if (al < 0.03) return;
@@ -3264,26 +3456,29 @@ function buildSigns() {
   }
 }
 // ---- intermission shows: a ~3.5 s camera cut before the stats panel; random, never the same twice in a row
-const SHOW_KEYS = ['mummo', 'hug', 'cannon', 'zamboni', 'dance'];
-const SHOW_LABEL = { mummo: 'Mummokamera', hug: 'Halauskamera', cannon: 'Makkaratykki', zamboni: 'Jäänhoitokone', dance: 'Tanssikisa' };
+const SHOW_KEYS = ['mummo', 'hug', 'cannon', 'zamboni', 'dance', 'skate', 'raffle', 'blindref'];
+const SHOW_LABEL = { mummo: 'Mummokamera', hug: 'Halauskamera', cannon: 'Makkaratykki', zamboni: 'Jäänhoitokone', dance: 'Tanssikisa', skate: 'Hirven taitoluistelu', raffle: 'Illan arvonta', blindref: 'Tuomari sokkona' };
 function mascot(kind, x, y, ang, o) { return Object.assign({ kind, x, y, ang, z0: 0, hop: 0, bob: 0, lean: 0, arms: null, team: 0 }, o || {}); }
 function showFig(kind, x, y, o) { return Object.assign({ kind, x, y, vx: 0, vy: 0, ang: 0, stun: 0, anim: 0, alpha: 1, t: 0, jump: 0, body: 0.48, team: 2, name: 'Show' + kind, num: 99 }, o || {}); }
 function startShow() {
   G.show = null; const off = G.settings.showOff || [], keys = SHOW_KEYS.filter(k => !off.includes(k));
   if (!keys.length || G.demo) return; const pool = keys.length > 1 ? keys.filter(k => k !== G.lastShow) : keys, key = pick(pool);
-  G.lastShow = key; const T = key === 'dance' ? 3.9 : 3.5, S = { key, t: 0, T, intro: 2.3, sub: pick(TXT.shows[key].sub), items: [], hearts: [] };
+  G.lastShow = key; const T = ({ dance: 3.9, skate: 4.9, raffle: 4.7, blindref: 5.6 })[key] || 3.5, S = { key, t: 0, T, intro: 2.3, sub: pick(TXT.shows[key].sub), items: [], hearts: [] };
   G.show = S; G.stateT += T + S.intro;
 }
 function stageShow() { // after the intro the camera cuts to the show: players line up by the near boards, puck off to the side
   const S = G.show, key = S.key;
   G.players.filter(onIce).forEach((p, i) => Object.assign(p, { x: -20 + i * 3.2, y: -11.4, vx: 0, vy: 0, ang: Math.PI / 2, stun: 0 }));
-  Object.assign(G.puck, { x: -24, y: -10.5, vx: 0, vy: 0, owner: null, slide: null });
+  Object.assign(G.puck, { x: -24, y: -10.5, vx: 0, vy: 0, owner: null, slide: null, carry: null });
   G.actors.forEach((a, i) => { if (a.kind === 'ref' || a.kind === 'coach') Object.assign(a, { x: 23 - i * 1.5, y: -11.4, vx: 0, vy: 0, ang: Math.PI / 2 }); });
   if (key === 'mummo') S.m = showFig('mummo', 0, 15.85, { z0: 1.9, ang: -Math.PI / 2 });
   if (key === 'hug') { S.b = mascot('bear', -0.2, 6, 0); S.mo = showFig('moose', 7.5, 6, { ang: Math.PI, kind: 'moose' }); SFX.moo(); }
   if (key === 'cannon') { S.b = mascot('bear', -1.9, 5.2, -Math.PI / 2); S.f = mascot('fox', 1.9, 5.2, -Math.PI / 2); S.shots = 0; S.saus = []; }
   if (key === 'zamboni') { S.z = { x: -17, y: 3.2, dir: 1, light: 0, alpha: 1 }; S.f = mascot('fox', 0, 3.2, -Math.PI / 2, { z0: 2.86 }); SFX.engine(); }
   if (key === 'dance') { S.b = mascot('bear', -1.4, 5, -Math.PI / 2); S.f = mascot('fox', 1.4, 5, -Math.PI / 2); S.win = Math.random() < 0.5 ? 'bear' : 'fox'; }
+  if (key === 'skate') { S.mo = showFig('moose', -4.2, 5, { ang: 0, kind: 'moose' }); S.cards = 0; }
+  if (key === 'raffle') { const r = (Math.random() * 5) | 0; S.row = r + 1; S.seat = 1 + ((Math.random() * 28) | 0); S.sx = rand(-15, 15); S.sy = 14.3 + r * 1.25 + 0.6; S.sz = 0.9 + r + 0.55; S.prize = pick(TXT.shows.raffle.prizes); S.spx = S.sx - 20; S.spy = S.sy; }
+  if (key === 'blindref') { S.r = showFig('ref', GX - 7, 0.2, { ang: 0, blind: true, bow: 0 }); S.hitT = null; }
   S.wipe = 0.4; G.camCut = true; SFX.organ(); achShow(key);
 }
 function endShow() { if (!G.show) return; const staged = !(G.show.intro > 0); G.show = null; if (staged) G.camCut = true; G.stateT = Math.min(G.stateT, 4.5); G.interWait = 0; G.anyPress = false; }
@@ -3324,8 +3519,32 @@ function updateShow(dt) {
       l.ang = -Math.PI / 2; l.lean = 0.35; l.hop = 0; l.arms = [[0.25, -0.45, 0.55], [0.25, 0.45, 0.55]];
     }
   }
+  if (S.key === 'skate') {
+    const mo = S.mo;
+    if (t < 1.4) { mo.vx = 5.2 * (1 - t / 1.4) + 0.3; mo.x += mo.vx * dt; mo.anim += dt * 3; mo.ang = 0; }
+    else if (t < 3.1) { mo.vx = 0; const k = (t - 1.4) / 1.7; mo.ang += dt * (3 + 15 * Math.sin(k * Math.PI)); if (Math.random() < dt * 14) spawn(mo.x + rand(-1.2, 1.2), mo.y + rand(-1.2, 1.2), 0.1, 3, { col: ['#e9f4ff', '#ffffff'], smin: 1, smax: 3, zmin: 0.5, zmax: 2, size: 0.07, life: 0.5 }); }
+    else { let da = -Math.PI / 2 - mo.ang; da = ((da % TAU) + TAU * 1.5) % TAU - Math.PI; mo.ang += da * (1 - Math.exp(-dt * 8)); }
+    for (let i = 0; i < 3; i++) if (t > 3.35 + i * 0.42 && S.cards <= i) { S.cards = i + 1; if (i < 2) { SFX.crowd(); SFX.tap(); } else { SFX.boo(); SFX.boing(); } }
+  }
+  if (S.key === 'raffle') {
+    const k = clamp(t / 2.6, 0, 1), e = (1 - k) * (1 - k); S.spx = S.sx + Math.sin(t * 3.1 - 1.6) * 22 * e; S.spy = S.sy + Math.sin(t * 5.3) * 2.2 * e;
+    if (t >= 2.6 && !S.hit) { S.hit = true; SFX.event(); SFX.crowd(); spawn(S.sx, S.sy - 0.4, S.sz + 1.2, 60, { conf: true, col: ['#ffc629', '#ff5fa2', '#5fd3ff', '#ffffff'], life: 1.6, zmin: 1, zmax: 4 }); }
+  }
+  if (S.key === 'blindref') {
+    const r = S.r;
+    if (S.hitT == null) {
+      r.vx = 2.8; r.vy = Math.cos(t * 2.4) * 0.45; r.x += r.vx * dt; r.y += r.vy * dt; r.ang = Math.atan2(r.vy, r.vx);
+      if (r.x > GX - 0.8) { S.hitT = t; r.x = GX - 0.8; r.vx = -3.4; r.vy = 0; SFX.post(); SFX.ooh(); addShake(4); spawn(GX - 0.5, r.y, 1.25, 14, { col: ['#ffffff', '#ffd65a'], smin: 1, smax: 4, zmin: 1, zmax: 3, size: 0.06, life: 0.5 }); }
+    } else {
+      const k = t - S.hitT; r.vx *= Math.exp(-dt * 3); r.x += r.vx * dt;
+      if (k < 1.0) r.ang = Math.sin(k * 18) * 0.35 * (1 - k);
+      else { r.ang *= Math.exp(-dt * 6); r.vx = 0; }
+      r.bow = k > 1.15 && k < 2.95 ? Math.abs(Math.sin((k - 1.15) / 0.9 * Math.PI)) : 0;
+      if (k > 1.15 && !S.bowed) { S.bowed = true; SFX.crowd(); }
+    }
+  }
   for (const h of S.hearts) { h.z += h.v * dt; h.life -= dt; } S.hearts = S.hearts.filter(h => h.life > 0);
-  if (S.key === 'zamboni') G.camCut = true; // follow the machine without lag
+  if (S.key === 'zamboni' || S.key === 'raffle') G.camCut = true; // follow the machine without lag
   if (t >= S.T) endShow();
 }
 function showCam() {
@@ -3334,6 +3553,9 @@ function showCam() {
   if (k === 'hug') return camState({ px: 1.2, py: 0.6, pz: 2.0, tx: 1.0, ty: 6, tz: 1.35, foc: 820 });
   if (k === 'cannon') return camState({ px: 0, py: -3.2, pz: 2.6, tx: 0, ty: 10, tz: 3.4, foc: 700 });
   if (k === 'zamboni') return camState({ px: S.z.x - 1.5, py: -7.5, pz: 3.2, tx: S.z.x + 1, ty: 3.2, tz: 1.7, foc: 720 });
+  if (k === 'skate') return camState({ px: 0, py: -1.2, pz: 2.4, tx: 0, ty: 5, tz: 1.9, foc: 760 });
+  if (k === 'raffle') return camState({ px: S.spx * 0.25, py: 2, pz: 2.4, tx: S.spx * 0.85, ty: 17, tz: 4.2, foc: 640 });
+  if (k === 'blindref') return camState({ px: GX - 6.6, py: -3.3, pz: 1.9, tx: GX - 2.4, ty: 0.3, tz: 1.2, foc: 800 });
   return camState({ px: 0, py: -2.6, pz: 2.2, tx: 0, ty: 5, tz: 1.45, foc: 760 });
 }
 function buildMascot(m) {
@@ -3362,6 +3584,20 @@ function buildShow(dt) {
   const S = G.show; if (!S || S.intro > 0) return; // nothing on the ice until the intro card is over
   if (S.m) buildSkater(S.m, dt);
   if (S.mo) buildMoose(S.mo, dt);
+  if (S.r) { buildSkater(S.r, dt); if (S.hitT != null && S.t - S.hitT < 1.6) for (let i = 0; i < 4; i++) { const an = S.t * 6 + i * TAU / 4; quadBill(QD.glow, S.r.x + Math.cos(an) * 0.4, S.r.y + Math.sin(an) * 0.4, 2.15, 0.35, CS('#ffd65a'), 0.9); } }
+  if (S.key === 'skate') { // a pink tutu, of course
+    const mo = S.mo, ca = Math.cos(mo.ang), sa = Math.sin(mo.ang), c = [mo.x - ca * 0.05, mo.y - sa * 0.05];
+    ellip([c[0], c[1], 1.28], [ca * 1.0, sa * 1.0, 0], [sa * 0.66, -ca * 0.66, 0], [0, 0, 0.07], '#ff8fc8', 0.3);
+    ellip([c[0], c[1], 1.2], [ca * 1.1, sa * 1.1, 0], [sa * 0.74, -ca * 0.74, 0], [0, 0, 0.05], '#ffc2e2', 0.3);
+  }
+  if (S.key === 'raffle') { // the beam from the roof and the lucky seat
+    const sx = S.spx, sy = S.spy, sz = S.sz + 0.4, top = [sx * 0.4, 3, 24], b = [sx - top[0], sy - top[1], sz - top[2]];
+    putQ(QD.glow, (sx + top[0]) / 2, (sy + top[1]) / 2, (sz + top[2]) / 2, Rv[0] * 2.4, Rv[1] * 2.4, Rv[2] * 2.4, b[0], b[1], b[2], CS('#fff1c8'), 0.14);
+    quadBill(QD.glow, sx, sy, sz, 3.4, CS('#fff1c8'), 0.4);
+    if (S.hit) { const w = Math.sin(S.t * 10) * 0.25, x = S.sx, y = S.sy - 0.3, z = S.sz;
+      cap([x, y, z], [x, y, z + 0.55], 0.22, '#ffc629', 0.2); sph([x, y, z + 0.85], 0.17, '#f1c7a5', 0.3);
+      for (const s of [-1, 1]) cap([x + s * 0.25, y, z + 0.5], [x + s * (0.45 + w * s), y - 0.05, z + 1.15], 0.06, '#ffc629', 0.2); }
+  }
   if (S.z) buildZamboni(S.z);
   for (const m of [S.b, S.f]) if (m) buildMascot(m);
   if (S.key === 'cannon') {
@@ -3381,7 +3617,7 @@ const ACH = [
   ['blow', 'Murska', 'Voita vähintään viiden maalin erolla', 3], ['hard', 'Vaikea pala', 'Voita Vaikea-tasolla', 3],
   ['artist', 'Taiteilija', 'Tee maali 2 s sisällä harhautuksesta', 2], ['onetimer', 'Suoraan lapaan', 'Tee maali suoralla laukauksella', 2],
   ['teams', 'Kiertolainen', 'Pelaa viidellä eri joukkueella', 1], ['mummo', 'Mummo vei', 'Mummo vie kiekon sinulta', 1],
-  ['circus', 'Sirkusilta', 'Koe kolme eri tapahtumaa samassa ottelussa', 1], ['showman', 'Showmies', 'Näe kaikki viisi väliaikashowta', 2],
+  ['circus', 'Sirkusilta', 'Koe kolme eri tapahtumaa samassa ottelussa', 1], ['showman', 'Showmies', 'Näe kaikki kahdeksan väliaikashowta', 2],
   ['po', 'Pudotuspeleihin', 'Selviä kauden neljän parhaan joukkoon', 2], ['reg', 'Runkosarjan voittaja', 'Voita runkosarja', 3],
   ['champ', 'Mestari', 'Voita mestaruus', 3], ['post', 'Tolppa-Tauno', 'Osu tolppaan 3 kertaa samassa ottelussa', 1],
   ['dance', 'Tanssikengät', 'Tee pyörähdys, hyppy ja jalkojen välistä samassa ottelussa', 2], ['hits', 'Taklauskone', 'Tee 10 taklausta yhdessä ottelussa', 1],
@@ -3423,6 +3659,7 @@ function achMatchStart() {
 function achGoal(team, sh) {
   if (!humanTeam(team)) { const me = 1 - team; if (humanTeam(me) && G.am) G.am.maxDown = Math.max(G.am.maxDown, G.score[team] - G.score[me]); return; }
   unlock('first');
+  if (G.am && G.mode !== 'so' && G.state !== 'shootout') { const el = PERIOD - G.clock; if (!G.am.fast || el < G.am.fast.t) G.am.fast = { t: el, per: G.period, name: sh && sh.kind === 'player' ? sh.name : '' }; }
   if (sh && sh.kind === 'player') {
     const m = G.mpts[TEAM[team].id + '|' + sh.name]; if (m && m.g >= 3) unlock('hat');
     if (sh.dekeAt != null && G.t - sh.dekeAt < 2) unlock('artist');
@@ -3439,12 +3676,82 @@ function achEnd() {
   if (G.so && G.so.winner === 0) unlock('so'); else if (G.period > 3) unlock('ot');
   if (b - r >= 5) unlock('blow'); if (G.D === DIFFS[2]) unlock('hard');
 }
+// ---- records and season history (kept inside the achievement save, so no new save key)
+const REC_FI = { loc: 'fi-FI', sum: 'Otteluita {g} · Voittoja {w} · Voitto-% {p}', big: 'Suurin voitto', goals: 'Eniten maaleja ottelussa', fast: 'Nopein maali', streak: 'Pisin voittoputki', saves: 'Eniten torjuntoja ottelussa',
+  seasons: 'Pelatut kaudet', bestFin: 'Paras sijoitus', titles: 'Mestaruudet', none: 'Ei vielä', vs: 'vs {x}', now: 'Nyt {n} peräkkäin', per: '{n}. erä', ot: 'Jatkoaika', hist: 'Kausihistoria',
+  cols: ['#', 'Joukkue', 'Kausi', 'Runkosarja', 'Lopputulos', 'Päivä'], short: 'Lyhyt', full: 'Täysi', champ: 'Mestari', final: 'Finaali', semi: 'Välierä', out: 'Ei pudotuspeleihin', note: 'Ennätykset lasketaan yksittäispeleistä ja kausipeleistä.' };
+const REC_EN = { loc: 'en-GB', sum: 'Games {g} · Wins {w} · Win % {p}', big: 'Biggest win', goals: 'Most goals in a game', fast: 'Fastest goal', streak: 'Longest winning streak', saves: 'Most saves in a game',
+  seasons: 'Seasons played', bestFin: 'Best finish', titles: 'Championships', none: 'Not yet', vs: 'vs {x}', now: 'Current streak {n}', per: 'Period {n}', ot: 'Overtime', hist: 'Season history',
+  cols: ['#', 'Team', 'Season', 'Regular season', 'Result', 'Date'], short: 'Short', full: 'Full', champ: 'Champion', final: 'Final', semi: 'Semi-final', out: 'Missed playoffs', note: 'Records count single games and season games.' };
+const REC_TXT = typeof LANG !== 'undefined' && LANG === 'en' ? REC_EN : REC_FI;
+function recStore() { const s = achStore(); if (!s.rec || typeof s.rec !== 'object') s.rec = { games: 0, wins: 0, streak: 0, best: 0, big: null, goals: null, fast: null, saves: null, seasons: [] }; if (!Array.isArray(s.rec.seasons)) s.rec.seasons = []; return s.rec; }
+function recEnd() {
+  if (G.demo || G.mode === 'duo' || G.mode === 'so' || !G.humans || !G.humans.includes(0)) return;
+  const R = recStore(), [b, r] = G.score, now = Date.now(), opp = TEAM[1].id, win = b > r;
+  R.games++; if (win) { R.wins++; R.streak++; R.best = Math.max(R.best, R.streak); } else R.streak = 0;
+  if (win && (!R.big || b - r > R.big.a - R.big.b || (b - r === R.big.a - R.big.b && b > R.big.a))) R.big = { a: b, b: r, opp, d: now };
+  if (b > 0 && (!R.goals || b > R.goals.n)) R.goals = { n: b, a: b, b: r, opp, d: now };
+  const f = G.am && G.am.fast; if (f && (!R.fast || f.t < R.fast.t)) R.fast = Object.assign({ d: now, opp }, f);
+  const sv = G.stats.saves[0], gk = G.players.find(p => p.team === 0 && p.isGoalie);
+  if (sv > 0 && (!R.saves || sv > R.saves.n)) R.saves = { n: sv, name: gk ? gk.name : '', opp, d: now };
+  achSave();
+}
+function recSeason(s) {
+  if (!s || s.recDone) return; s.recDone = true;
+  const me = s.team, po = s.po, inS = x => x && (x.a === me || x.b === me);
+  const res = s.champion === me ? 'champ' : po && inS(po.series[0]) ? 'final' : po && po.semis && po.semis.some(inS) ? 'semi' : 'out';
+  const R = recStore(); R.seasons.push({ team: me, len: s.len, rank: s.finalRank || 0, res, d: Date.now() }); if (R.seasons.length > 60) R.seasons.shift(); achSave();
+}
+function showRecs() {
+  const R = recStore(), T = REC_TXT, dt = ms => { try { return new Date(ms).toLocaleDateString(T.loc); } catch (e) { return ''; } };
+  const tn = id => teamById(id).name, mmss = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
+  const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const ord = { champ: 0, final: 1, semi: 2, out: 3 }, S = R.seasons;
+  const best = S.slice().sort((x, y) => ord[x.res] - ord[y.res] || (x.rank || 99) - (y.rank || 99))[0];
+  const resTxt = o => T[o.res];
+  const champs = S.filter(o => o.res === 'champ').length;
+  const cards = [
+    [T.big, R.big && R.big.a + '–' + R.big.b, R.big && fill(T.vs, { x: tn(R.big.opp) }) + ' · ' + dt(R.big.d)],
+    [T.goals, R.goals && String(R.goals.n), R.goals && (R.goals.a != null ? R.goals.a + '–' + R.goals.b + ' ' : '') + fill(T.vs, { x: tn(R.goals.opp) }) + ' · ' + dt(R.goals.d)],
+    [T.fast, R.fast && mmss(R.fast.t), R.fast && [R.fast.name, R.fast.per > 3 ? T.ot : fill(T.per, { n: R.fast.per }), dt(R.fast.d)].filter(Boolean).join(' · ')],
+    [T.streak, R.best > 0 && String(R.best), R.best > 0 && fill(T.now, { n: R.streak })],
+    [T.saves, R.saves && String(R.saves.n), R.saves && [R.saves.name, dt(R.saves.d)].filter(Boolean).join(' · ')],
+    [T.seasons, S.length > 0 && String(S.length), S.length > 0 && (S.filter(o => o.len === 17).length + ' ' + T.full.toLowerCase() + ' · ' + S.filter(o => o.len !== 17).length + ' ' + T.short.toLowerCase())],
+    [T.bestFin, best && (best.res === 'out' ? best.rank + '.' : T[best.res]), best && tn(best.team) + ' · ' + dt(best.d)],
+    [T.titles, S.length > 0 && String(champs), champs > 0 && S.filter(o => o.res === 'champ').map(o => tn(o.team)).filter((v, i, a) => a.indexOf(v) === i).slice(0, 3).join(', ')]];
+  $('recSum').textContent = fill(T.sum, { g: R.games, w: R.wins, p: R.games ? Math.round(R.wins / R.games * 100) : 0 });
+  $('recGrid').innerHTML = cards.map(c => `<div class="rec${c[1] ? ' got' : ''}"><small>${esc(c[0])}</small><b>${c[1] ? esc(c[1]) : '–'}</b><em>${c[1] ? esc(c[2] || '') : esc(T.none)}</em></div>`).join('');
+  $('recHist').innerHTML = S.length ? '<h4>' + esc(T.hist) + '</h4><table class="tbl"><tr>' + T.cols.map((h, i) => `<th${i === 1 ? ' class="l"' : ''}>${esc(h)}</th>`).join('') + '</tr>' +
+    S.map((o, i) => [i, o]).reverse().slice(0, 10).map(([i, o]) => `<tr${o.res === 'champ' ? ' class="me"' : ''}><td>${i + 1}.</td><td class="l">${esc(tn(o.team))}</td><td>${o.len === 17 ? T.full : T.short}</td><td>${o.rank ? o.rank + '.' : '–'}</td><td>${esc(resTxt(o))}</td><td>${dt(o.d)}</td></tr>`).join('') + '</table>'
+    : '<p class="note">' + esc(T.note) + '</p>';
+  only('recs'); placeOverlay('recs');
+}
 function showAch() {
   const s = achStore(), n = ACH.filter(a => s.got[a[0]]).length;
   const cnt = t => ACH.filter(a => a[3] === t && s.got[a[0]]).length + '/' + ACH.filter(a => a[3] === t).length;
   $('achCount').textContent = n + ' / ' + ACH.length + '   ·   Kulta ' + cnt(3) + '   Hopea ' + cnt(2) + '   Pronssi ' + cnt(1);
   $('achGrid').innerHTML = ACH.map(a => `<div class="ach${s.got[a[0]] ? ' got t' + a[3] : ''}"><span class="ai">${medalSVG(a[3], !!s.got[a[0]])}</span><span><b>${a[1]}</b><em>${a[2]}</em></span></div>`).join('');
   only('ach'); placeOverlay('ach');
+}
+function buildAmbience() {
+  // camera flashes sparkle in the stands at big moments
+  if (!REDUCED) {
+    const n = G.state === 'goal' || G.excite > 0.95 ? 3 : G.introT > 0 && !G.demo ? 2 : G.state === 'mvp' ? 1 : 0;
+    for (let i = 0; i < n; i++) {
+      const row = (Math.random() * 10) | 0, end = Math.random() < 0.25, sd = Math.random() < 0.5 ? 1 : -1;
+      const x = end ? sd * (31.5 + row * 1.25 + 0.4) : rand(-38, 38), y = end ? rand(-11, 12) : 14.3 + row * 1.25 + 0.6;
+      quadBill(QD.glow, x, y, 0.9 + row + 0.95, rand(1.0, 2.1), WHITE, 0.95);
+    }
+  }
+  // soft blob shadows when the real shadow map is off (phones), so nobody floats above the ice
+  if (!SHADOW) {
+    for (const p of G.players) if (onIce(p)) quadFlat(QD.shad, p.x, p.y, 0.012, p.isGoalie ? 2.0 : 1.55, WHITE, 0.42);
+    for (const a of G.actors) if (a.x != null && a.kind !== 'jumbo' && !(a.z > 0.6)) quadFlat(QD.shad, a.x, a.y, 0.012, a.kind === 'moose' ? 3.0 : a.kind === 'zamboni' ? 4.4 : a.kind === 'ref' || a.kind === 'coach' || a.kind === 'mummo' ? 1.5 : 0.7, WHITE, 0.4);
+  }
+  // faint light cones under the roof lamps (medium quality and up)
+  if (Q() > 0) for (const x of [-20, -10, 0, 10, 20]) for (const y of [-4, 4]) {
+    const h = 15, w = 7.5; putQ(QD.glow, x, y, 24.4 - h / 2, Rv[0] * w, Rv[1] * w, 0, 0, 0, h, CS('#cfe2ff'), 0.05 * (0.35 + 0.65 * LS.dim));
+  }
 }
 function buildPuck() {
   const pk = G.puck, sp = hyp(pk.vx, pk.vy);
@@ -3484,8 +3791,38 @@ function buildParts() {
     if ((x1 - x0) * a.dir > 0) putQ(QD.ui, (x0 + x1) / 2, a.y, 0.015, x1 - x0, 0, 0, 0, ZH[1] * 2, 0, WHITE, 0.5 * Math.max(0, a.alpha), ...UV_WHITE);
   }
 }
+// ---- light show state: goals, the opening, the MVP and the intermission shows get dimmed house lights and spotlights
+const LS = { dim: 1, spots: new Float32Array(8), col: [1, 0.95, 0.85] };
+function updLightShow(dt) {
+  let target = 1; const s = LS.spots, set = (i, x, y, r, w) => { s[i * 4] = x; s[i * 4 + 1] = y; s[i * 4 + 2] = r; s[i * 4 + 3] = w; };
+  const t = G.t, pulse = REDUCED ? 1 : 0.8 + 0.2 * Math.sin(t * 9);
+  if (G.state === 'goal' && G.goalLight.t > 0.2 && !G.demo) {
+    const tm = scoringTeam(), sc = G.puck.last, sg = G.goalLight.sg; target = 0.42; LS.col = CS(tm >= 0 ? TEAM[tm].light : '#ffe9b0');
+    if (sc && sc.x != null) set(0, sc.x, sc.y, 4.6, 1); else set(0, sg * (GX - 5), 0, 5, 1);
+    set(1, sg * (GX - 5) + (REDUCED ? 0 : Math.sin(t * 2.6) * 6), REDUCED ? 0 : Math.cos(t * 2.1) * 8, 5.2, pulse);
+  } else if (G.introT > 0 && !G.demo && (G.state === 'faceoff' || G.state === 'play')) {
+    target = 0.52; LS.col = [1, 0.95, 0.85];
+    set(0, Math.sin(t * 1.3) * 17, Math.cos(t * 1.05) * 8, 6.5, 1); set(1, -Math.sin(t * 1.1 + 1) * 17, Math.sin(t * 1.45) * 8, 6.5, 1);
+  } else if (G.state === 'mvp' && G.mvp && G.mvp.p) { target = 0.45; LS.col = [1, 0.9, 0.6]; set(0, G.mvp.p.x, G.mvp.p.y, 4.2, 1); set(1, 0, 0, 1, 0); }
+  else if (G.state === 'intermission' && G.show && !(G.show.intro > 0)) {
+    const S = G.show, k = S.key; LS.col = [1, 0.93, 0.8];
+    if (k === 'mummo') { target = 0.8; set(0, 0, 0, 1, 0); }
+    else { target = 0.55; if (k === 'hug') set(0, 1, 6, 5, 1); else if (k === 'cannon') set(0, 0, 5.6, 5.5, 1); else if (k === 'zamboni') set(0, S.z.x + 1, 3.2, 6, 1);
+      else if (k === 'skate') { target = 0.36; set(0, S.mo.x, S.mo.y, 3.8, 1); }
+      else if (k === 'raffle') { target = 0.3; set(0, S.spx, S.spy, 2.5, 1); }
+      else if (k === 'blindref') { target = 0.45; set(0, S.r.x, S.r.y, 3.4, 1); }
+      else set(0, 0, 5, 5.5, 1); }
+    set(1, 0, 0, 1, 0);
+  } else if (G.ev && G.ev.key === 'disco' && !G.demo && (G.state === 'play' || G.state === 'faceoff')) {
+    target = 0.55; LS.col = CS(DISCO[(t * 2 | 0) % DISCO.length]);
+    set(0, Math.sin(t * 1.7) * 16, Math.cos(t * 2.3) * 8, 6, 1); set(1, -Math.sin(t * 1.3 + 2) * 16, Math.sin(t * 1.9) * 8, 6, 1);
+  }
+  LS.dim += (target - LS.dim) * (1 - Math.exp(-dt * (target < LS.dim ? 7 : 4)));
+  if (target === 1 && LS.dim > 0.99) LS.dim = 1;
+}
+function lsUniforms(pr) { gl.uniform1f(pr.u.uDim, LS.dim); gl.uniform4fv(pr.u.uSpot, LS.spots); gl.uniform3f(pr.u.uSpotCol, LS.col[0], LS.col[1], LS.col[2]); }
 function meshPass(VP, LVP, shadows, mirror) {
-  const m = PR.mesh; gl.useProgram(m.p); gl.uniformMatrix4fv(m.u.uVP, false, VP); gl.uniformMatrix4fv(m.u.uLVP, false, LVP);
+  const m = PR.mesh; gl.useProgram(m.p); lsUniforms(m); gl.uniformMatrix4fv(m.u.uVP, false, VP); gl.uniformMatrix4fv(m.u.uLVP, false, LVP);
   gl.uniform3fv(m.u.uLightDir, LDIR); gl.uniform3f(m.u.uCamPos, CPx, CPy, CPz); gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, shadows ? SHADOW.tex : DUMMYSH);
   gl.uniform1i(m.u.uShadow, 1); gl.uniform1f(m.u.uShadowOn, shadows ? 1 : 0); gl.uniform1f(m.u.uMirror, mirror ? 1 : 0); meshDraw();
 }
@@ -3516,7 +3853,7 @@ function renderGL(dt, fr) {
     else if (a.kind === 'moose') buildMoose(a, dt); else if (a.kind === 'zamboni') buildZamboni(a); else if (a.kind === 'brawl') buildBrawl(a);
     else buildFlat(a);
   }
-  buildPuck(); buildParts(); buildNets(); buildSigns(); buildShow(dt);
+  buildPuck(); buildParts(); buildNets(); buildSigns(); buildShow(dt); updLightShow(dt); buildAmbience();
   for (const k in DYN) DYN[k].upload(); for (const k in QD) QD[k].upload(); meshUpload();
   iceTracks(); iceUpT -= dt; if (iceDirty && iceUpT <= 0) { updTex(TEX.ice, iceC, true); iceDirty = false; iceUpT = 0.25; }
   vcT -= dt; if (vcT <= 0) { vcContent(); vcT = 0.1; }
@@ -3534,6 +3871,7 @@ function renderGL(dt, fr) {
   gl.viewport(0, 0, W, H); gl.clearColor(0.025, 0.035, 0.06, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   const lit = PR.lit; gl.useProgram(lit.p);
   gl.uniformMatrix4fv(lit.u.uVP, false, VP); gl.uniformMatrix4fv(lit.u.uLVP, false, LVP); gl.uniform3fv(lit.u.uLightDir, LDIR); gl.uniform3f(lit.u.uCamPos, CPx, CPy, CPz);
+  lsUniforms(lit);
   gl.uniform1f(lit.u.uTime, G.t); gl.uniform1f(lit.u.uExcite, G.excite); gl.uniform1f(lit.u.uWaveX, G.wave ? -44 + (G.wave.t / G.wave.dur) * 88 : 1e4);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, shadows ? SHADOW.tex : DUMMYSH); gl.uniform1i(lit.u.uShadow, 1); gl.uniform1f(lit.u.uShadowOn, shadows ? 1 : 0);
   gl.disable(gl.BLEND);
@@ -3545,6 +3883,7 @@ function renderGL(dt, fr) {
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, shadows ? SHADOW.tex : DUMMYSH); gl.uniform1i(ip.u.uShadow, 1); gl.uniform1f(ip.u.uShadowOn, shadows ? 1 : 0);
   gl.uniform1f(ip.u.uAlpha, Q() === 2 ? 0.9 : 1);
   const gLt = G.goalLight.t > 0 ? 0.5 + 0.35 * Math.sin(G.t * 14) : 0; gl.uniform4f(ip.u.uGoal, G.goalLight.sg * (GX + 1.5), 0, gLt, 0);
+  lsUniforms(ip);
   gl.uniform4f(ip.u.uSoap, G.mods.soap ? 0.6 + Math.sin(G.t * 4) * 0.15 : 0, 0, 0, 0);
   const lamps = []; for (const x of [-20, -10, 0, 10, 20]) for (const y of [-4, 4]) lamps.push(x, y, 24.4); gl.uniform3fv(ip.u.uLamps, new Float32Array(lamps));
   gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -3640,6 +3979,18 @@ function drawShowHud() {
   ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; fitText(T.title, bw - 30, 34, FONT_D); ctx.fillText(T.title, CW / 2, by + 36);
   ctx.fillStyle = '#c9d6e4'; ctx.font = '700 17px ' + FONT_T; ctx.fillText(S.sub, CW / 2, by + 64);
   if (S.key === 'dance' && S.won) { const w = fill(T.win, { x: S.win === 'bear' ? 'KARHU' : 'KETTU' }), sc = 1 + Math.max(0, 0.3 - (S.t - 2.5)) * 2; ctx.font = Math.round(44 * sc) + 'px ' + FONT_D; ctx.lineWidth = 6; ctx.strokeStyle = '#0b1424'; ctx.strokeText(w, CW / 2, CH * 0.7); ctx.fillStyle = '#ffc629'; ctx.fillText(w, CW / 2, CH * 0.7); }
+  if (S.key === 'skate' && S.cards) { // the judges hold up their cards
+    const cw = 74, chh = 96, gap = 20, x0 = CW * 0.74 - (3 * cw + 2 * gap) / 2, y0 = CH * 0.5;
+    ctx.fillStyle = '#ffc629'; ctx.font = '800 16px ' + FONT_T; ctx.textAlign = 'center'; ctx.fillText(T.judges, x0 + (3 * cw + 2 * gap) / 2, y0 - 12);
+    for (let i = 0; i < S.cards; i++) { const x = x0 + i * (cw + gap); ctx.fillStyle = '#ffffff'; rrect(x, y0, cw, chh, 8); ctx.fill(); ctx.strokeStyle = '#0b1424'; ctx.lineWidth = 3; ctx.stroke();
+      ctx.fillStyle = i === 2 ? '#e0302f' : '#0b1424'; ctx.font = '54px ' + FONT_D; ctx.fillText(String([10, 10, 2][i]), x + cw / 2, y0 + 68); }
+  }
+  if (S.key === 'raffle' && S.hit) {
+    const w1 = fill(T.win, { r: S.row, p: S.seat }), w2 = fill(T.prize, { x: S.prize }), sc = 1 + Math.max(0, 0.3 - (S.t - 2.6)) * 2;
+    ctx.textAlign = 'center'; ctx.lineWidth = 6; ctx.strokeStyle = '#0b1424';
+    ctx.font = Math.round(44 * sc) + 'px ' + FONT_D; ctx.strokeText(w1, CW / 2, CH * 0.66); ctx.fillStyle = '#ffc629'; ctx.fillText(w1, CW / 2, CH * 0.66);
+    fitText(w2, CW - 60, 34, FONT_D); ctx.strokeText(w2, CW / 2, CH * 0.66 + 46); ctx.fillStyle = '#ffffff'; ctx.fillText(w2, CW / 2, CH * 0.66 + 46);
+  }
   ctx.globalAlpha = 0.75; ctx.fillStyle = '#ffffff'; ctx.font = '700 14px ' + FONT_T; ctx.fillText('Ohita: mikä tahansa toimintonappi', CW / 2, CH - 46);
   ctx.restore();
 }
@@ -3693,7 +4044,7 @@ function drawSpots() {
 }
 function fitText(txt, maxW, size, font) { ctx.font = size + 'px ' + font; const w = ctx.measureText(txt).width; if (w > maxW) { size = Math.floor(size * maxW / w); ctx.font = size + 'px ' + font; } return size; }
 function wrapText(t, x, y, maxW, lh) { const words = t.split(' '); let line = '', yy = y; for (const w of words) { const test = line ? line + ' ' + w : w; if (ctx.measureText(test).width > maxW && line) { ctx.fillText(line, x, yy); line = w; yy += lh; } else line = test; } ctx.fillText(line, x, yy); }
-const EVENT_LABEL = { coach: 'Valmentaja jäällä', fired: 'Valmentaja sai potkut', rocket: 'Rakettikiekko', soap: 'Saippuajää', ref: 'Tuomari sekoaa', goalie: 'Maalivahti hyökkää', granny: 'Mummo pelissä', fish: 'Kala jäällä', allcheck: 'Kaikki taklaavat', stick: 'Maila poikki', var: 'VAR', zamboni: 'Jäänhoitokone', sausage: 'Makkarasade', moose: 'Hirvi jäällä', mascots: 'Maskottien tappelu', jumbo: 'Jumbotron putoaa' };
+const EVENT_LABEL = { gull: 'Lokki vie kiekon', disco: 'Disko', coach: 'Valmentaja jäällä', fired: 'Valmentaja sai potkut', rocket: 'Rakettikiekko', soap: 'Saippuajää', ref: 'Tuomari sekoaa', goalie: 'Maalivahti hyökkää', granny: 'Mummo pelissä', fish: 'Kala jäällä', allcheck: 'Kaikki taklaavat', stick: 'Maila poikki', var: 'VAR', zamboni: 'Jäänhoitokone', sausage: 'Makkarasade', moose: 'Hirvi jäällä', mascots: 'Maskottien tappelu', jumbo: 'Jumbotron putoaa' };
 const easeOut = t => 1 - Math.pow(1 - clamp(t, 0, 1), 3);
 function skew(x, y, w, h, k = 14) { ctx.beginPath(); ctx.moveTo(x + k, y); ctx.lineTo(x + w + k, y); ctx.lineTo(x + w - k, y + h); ctx.lineTo(x - k, y + h); ctx.closePath(); }
 function panelFill(y, h, a = 0.94) { const g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, `rgba(22,36,62,${a})`); g.addColorStop(1, `rgba(8,14,26,${a})`); return g; }
@@ -3889,6 +4240,7 @@ function render(rdt = 1 / 60) {
   if (G.flash > 0 && !REDUCED) { ctx.fillStyle = `rgba(255,255,240,${(Math.sin(G.flash * 40) > 0 ? 0.55 : 0.1) * Math.min(1, G.flash)})`; ctx.fillRect(0, 0, CW, CH); }
   if (G.mods.rocket) { ctx.strokeStyle = 'rgba(255,140,40,0.25)'; ctx.lineWidth = 2; for (let i = 0; i < 8; i++) { const yy = (i * 97 + G.t * 900) % CH; ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(60, yy); ctx.moveTo(CW - 60, (yy + 300) % CH); ctx.lineTo(CW, (yy + 300) % CH); ctx.stroke(); } }
   if (fr) drawReplayOverlay(); else drawHUD();
+  clipTick();
   if (!GL_OK) { ctx.fillStyle = 'rgba(8,14,26,0.92)'; ctx.fillRect(0, 0, CW, CH); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = '28px ' + FONT_D; ctx.fillText('Selaimesi ei tue WebGL2-grafiikkaa', CW / 2, CH / 2 - 10); ctx.font = '700 20px ' + FONT_T; ctx.fillText('Kokeile päivitettyä Chromea, Edgeä, Firefoxia tai Safaria.', CW / 2, CH / 2 + 30); }
 }
 glInit();
@@ -3921,7 +4273,7 @@ window.addEventListener('keyup', e => { G.keys[e.code] = false; });
 window.addEventListener('blur', () => { G.keys = {}; });
 
 function show(id, on) { $(id).classList.toggle('hidden', !on); }
-const OVERLAYS = ['menu', 'season', 'pause', 'over', 'evset', 'tpick', 'ach'];
+const OVERLAYS = ['menu', 'season', 'pause', 'over', 'evset', 'tpick', 'ach', 'recs', 'setts'];
 function only(id) { for (const o of OVERLAYS) show(o, o === id); }
 let menuMode = 'single';
 const KEY_HTML = {
@@ -3943,7 +4295,7 @@ function placeOverlay(id) { // on a portrait phone the overlay moves out of the 
   if (want && el.parentNode !== document.body) document.body.appendChild(el); else if (!want && el.parentNode !== $('wrap')) $('wrap').appendChild(el);
   el.classList.toggle('pfull', want);
 }
-window.addEventListener('resize', () => { for (const id of ['tpick', 'season', 'ach']) if (!$(id).classList.contains('hidden')) placeOverlay(id); });
+window.addEventListener('resize', () => { for (const id of ['tpick', 'season', 'ach', 'recs', 'setts']) if (!$(id).classList.contains('hidden')) placeOverlay(id); });
 function openPicker(slot) {
   pickSlot = slot; $('tpTitle').textContent = SLOT_TITLE[slot];
   pickKey = slot === 'my' ? 'myTeam' : slot === 'opp' ? 'oppTeam' : slot; pickCur = G.settings[pickKey] || (slot === 'opp' ? 'rand' : LEAGUE[0].id);
@@ -4153,7 +4505,60 @@ $('seasonMenu').addEventListener('click', toMenu);
 $('optFollow').addEventListener('click', () => { G.settings.follow = !G.settings.follow; saveSettings(); refreshMenu(); });
 $('optReplay').addEventListener('click', () => { G.settings.replay = !G.settings.replay; saveSettings(); refreshMenu(); });
 $('optEvents').addEventListener('click', showEvSet);
+
+// ---- replay clips: record a replay (3D picture + TV graphics + sound) and save or share it as a video
+const CLIP_OK = (() => { try { return typeof MediaRecorder !== 'undefined' && typeof HTMLCanvasElement.prototype.captureStream === 'function'; } catch (e) { return false; } })();
+const CLIP = { rec: null, comp: null, cx: null, chunks: [], blob: null, url: null, file: null, name: '', ext: 'webm', aud: null, paused: false };
+const CLIP_PREFIX = (typeof LANG !== 'undefined' ? (LANG === 'en' ? 'puck-super-season-replay' : 'kiekko-superkausi-uusinta') : 'liiga-superkausi-uusinta');
+let recBtnState = '';
+function clipMime() { for (const m of ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm']) { try { if (MediaRecorder.isTypeSupported(m)) return m; } catch (e) {} } return ''; }
+function clipStart() {
+  if (!CLIP_OK || CLIP.rec || G.state !== 'replay' || !G.replay || G.demo) return;
+  const R = G.replay; R.f = R.a; R.t = 0; R.seg = 0; R.phase = 0; R.idx = R.a; // play the replay again from the start, this time on tape
+  const w = Math.min(1280, cv.width || 1280), h = Math.round(w * (cv.height || 720) / (cv.width || 1280)) & ~1;
+  if (!CLIP.comp) CLIP.comp = document.createElement('canvas');
+  CLIP.comp.width = w; CLIP.comp.height = h; CLIP.cx = CLIP.comp.getContext('2d');
+  let st; try { st = CLIP.comp.captureStream(30); } catch (e) { return; }
+  try { if (AC && master && !muted) { CLIP.aud = AC.createMediaStreamDestination(); master.connect(CLIP.aud); CLIP.aud.stream.getAudioTracks().forEach(t => st.addTrack(t)); } } catch (e) { CLIP.aud = null; }
+  const mime = clipMime(); CLIP.ext = mime.includes('mp4') ? 'mp4' : 'webm'; CLIP.chunks = [];
+  try { CLIP.rec = new MediaRecorder(st, mime ? { mimeType: mime, videoBitsPerSecond: 6e6 } : undefined); } catch (e) { CLIP.rec = null; clipAudioOff(); return; }
+  CLIP.rec.ondataavailable = e => { if (e.data && e.data.size) CLIP.chunks.push(e.data); };
+  CLIP.rec.onstop = clipDone; CLIP.rec.start(200); G.clipRec = true;
+}
+function clipAudioOff() { if (CLIP.aud) { try { master.disconnect(CLIP.aud); } catch (e) {} CLIP.aud = null; } }
+function clipTick() { // called at the end of every rendered frame
+  if (CLIP.rec) {
+    if (G.state !== 'replay') { try { CLIP.rec.stop(); } catch (e) { clipDone(); } }
+    else { const c = CLIP.cx, w = CLIP.comp.width, h = CLIP.comp.height; c.fillStyle = '#000'; c.fillRect(0, 0, w, h); try { c.drawImage(glc, 0, 0, w, h); } catch (e) {} c.drawImage(cv, 0, 0, w, h); }
+  }
+  const want = CLIP_OK && G.state === 'replay' && !G.demo ? (CLIP.rec ? 'rec' : 'on') : '';
+  if (want !== recBtnState) {
+    recBtnState = want; const b = $('recBtn'); if (!b) return;
+    b.classList.toggle('hidden', !want); b.disabled = want === 'rec'; b.textContent = want === 'rec' ? '● Tallennetaan…' : '● TALLENNA UUSINTA';
+  }
+}
+function clipDone() {
+  const r = CLIP.rec; CLIP.rec = null; G.clipRec = false; clipAudioOff();
+  if (!CLIP.chunks.length) return;
+  CLIP.blob = new Blob(CLIP.chunks, { type: ((r && r.mimeType) || 'video/' + CLIP.ext).split(';')[0] }); CLIP.chunks = [];
+  if (CLIP.url) URL.revokeObjectURL(CLIP.url); CLIP.url = URL.createObjectURL(CLIP.blob);
+  const d = new Date(), p2 = n => String(n).padStart(2, '0');
+  CLIP.name = CLIP_PREFIX + '-' + d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + '-' + p2(d.getHours()) + p2(d.getMinutes()) + p2(d.getSeconds()) + '.' + CLIP.ext;
+  CLIP.file = null; try { CLIP.file = new File([CLIP.blob], CLIP.name, { type: CLIP.blob.type }); } catch (e) {}
+  let share = false; try { share = !!(CLIP.file && navigator.canShare && navigator.canShare({ files: [CLIP.file] })); } catch (e) {}
+  $('clipShare').classList.toggle('hidden', !share);
+  CLIP.paused = false; if (playing() && !G.paused) { G.paused = true; CLIP.paused = true; }
+  $('clipBox').classList.remove('hidden');
+}
+function clipClose() { $('clipBox').classList.add('hidden'); if (CLIP.paused) { CLIP.paused = false; G.paused = false; } }
+$('recBtn').addEventListener('click', e => { e.currentTarget.blur(); clipStart(); });
+$('recBtn').addEventListener('pointerdown', e => e.stopPropagation());
+$('clipSave').addEventListener('click', () => { if (!CLIP.url) return; const a = document.createElement('a'); a.href = CLIP.url; a.download = CLIP.name; document.body.appendChild(a); a.click(); a.remove(); });
+$('clipShare').addEventListener('click', async () => { if (!CLIP.file) return; try { await navigator.share({ files: [CLIP.file], title: document.title }); } catch (e) {} });
+$('clipClose').addEventListener('click', clipClose);
 $('optAch').addEventListener('click', showAch);
+$('optRec').addEventListener('click', showRecs);
+$('recBack').addEventListener('click', () => { only('menu'); refreshMenu(); });
 $('achBack').addEventListener('click', () => { only('menu'); refreshMenu(); });
 $('teamA').addEventListener('click', () => openPicker(menuMode === 'duo' ? 'p1' : 'my'));
 $('teamB').addEventListener('click', () => { if (menuMode !== 'season') openPicker(menuMode === 'duo' ? 'p2' : 'opp'); });
@@ -4162,7 +4567,9 @@ $('tpOk').addEventListener('click', () => { if (pickCur) { G.settings[pickKey] =
 $('optMusic').addEventListener('click', () => { G.settings.music = !G.settings.music; saveSettings(); ac(); refreshMenu(); });
 for (const ev of ['pointerdown', 'keydown']) window.addEventListener(ev, () => { if (!AC) ac(); }, { passive: true });
 function setRes() { RES = [1, 1.25, 1.5][Q()]; cv.width = Math.round(CW * RES); cv.height = Math.round(CH * RES); glc.width = cv.width; glc.height = cv.height; buildStatic(); }
-$('evDone').addEventListener('click', () => { only('menu'); refreshMenu(); });
+$('evDone').addEventListener('click', () => { refreshMenu(); only('setts'); });
+$('optSet').addEventListener('click', () => { refreshMenu(); placeOverlay('setts'); only('setts'); });
+$('setBack').addEventListener('click', () => { only('menu'); refreshMenu(); });
 document.querySelectorAll('#chaosSeg button').forEach(b => b.addEventListener('click', () => { G.settings.chaos = +b.dataset.c; saveSettings(); showEvSet(); }));
 document.querySelectorAll('#modeSeg button').forEach(btn => btn.addEventListener('click', () => { menuMode = btn.dataset.m; refreshMenu(); }));
 document.querySelectorAll('#diffSeg button').forEach(btn => btn.addEventListener('click', () => {
@@ -4205,7 +4612,7 @@ setRes();
 startMatch(true);
 requestAnimationFrame(frame);
 $('barKeys').innerHTML = BAR_HTML.single;
-if (typeof window !== 'undefined') window.__liiga = { G, update, startMatch, startEvent, render, EVENTS, say, fill, TXT, recordResult, newSeason, standings, showSeason, applyTeams, seasonOpp, seasonDiff, seasonLabel, loadSeason, doDeke, throwCaps, loseStick, musicUpdate, ac, startShow, endShow, unlock, achStore, showAch, showEvSet, periodEnd, startPlayoffs };
+if (typeof window !== 'undefined') window.__liiga = { G, recSeason, recStore, showRecs, clipStart, update, startMatch, startEvent, render, EVENTS, say, fill, TXT, recordResult, newSeason, standings, showSeason, applyTeams, seasonOpp, seasonDiff, seasonLabel, loadSeason, doDeke, throwCaps, loseStick, musicUpdate, ac, startShow, endShow, unlock, achStore, showAch, showEvSet, periodEnd, startPlayoffs };
 </script>
 </body>
 </html>
